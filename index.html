@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小黑小白 · 运营管理小助手</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f5f7fa;
+    color: #1a1a2e;
+    min-height: 100vh;
+  }
+
+  /* ---- 顶部导航 ---- */
+  .navbar {
+    background: #fff;
+    border-bottom: 1px solid #e8ecf1;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 40px;
+    flex-shrink: 0;
+  }
+  .brand-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, #1a1a2e, #4a4a6a);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #fff;
+  }
+  .brand-name {
+    font-size: 17px; font-weight: 700; color: #1a1a2e;
+  }
+  .brand-sub {
+    font-size: 12px; color: #8e99a4; font-weight: 400;
+  }
+
+  .nav-tabs {
+    display: flex; gap: 4px; flex: 1;
+  }
+  .nav-tab {
+    padding: 8px 18px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 500; border: none;
+    background: transparent; color: #6b7685; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { background: #f0f2f5; color: #1a1a2e; }
+  .nav-tab.active { background: #1a1a2e; color: #fff; }
+  .nav-badge {
+    display: inline-block; border-radius: 10px; padding: 1px 8px;
+    font-size: 11px; margin-left: 6px; font-weight: 600;
+  }
+  .nav-badge.purple { background: #eee8ff; color: #7c5cfc; }
+  .nav-badge.orange { background: #fff3e6; color: #e67e22; }
+
+  /* ---- 主体 ---- */
+  .main { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .page-title {
+    font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;
+  }
+  .page-desc { font-size: 14px; color: #8e99a4; margin-bottom: 28px; }
+
+  /* ---- 卡片 ---- */
+  .card {
+    background: #fff;
+    border: 1px solid #e8ecf1;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+
+  /* ---- 表单元素 ---- */
+  .field label {
+    display: block; font-size: 12px; color: #8e99a4;
+    margin-bottom: 5px; font-weight: 500;
+  }
+  .field input, .field select {
+    width: 100%;
+    background: #f5f7fa;
+    border: 1px solid #e0e4ea;
+    border-radius: 8px;
+    color: #1a1a2e;
+    padding: 9px 12px;
+    font-size: 14px;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: #7c5cfc;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(124,92,252,0.1);
+  }
+  .field input::placeholder { color: #bcc3cd; }
+
+  /* 月份行 */
+  .month-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+  }
+  .month-row label { font-size: 14px; color: #8e99a4; font-weight: 500; }
+  .month-row input {
+    background: #fff; border: 1px solid #e0e4ea; border-radius: 8px;
+    color: #1a1a2e; padding: 8px 12px; font-size: 14px;
+  }
+
+  /* 配置卡片 */
+  .config-card {
+    display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 12px; align-items: end;
+  }
+
+  /* 结算卡片 */
+  .calc-card {
+    display: grid; grid-template-columns: 1.5fr 0.8fr 1fr 1fr 1fr; gap: 12px; align-items: end;
+  }
+  .model-name { font-size: 15px; font-weight: 600; color: #1a1a2e; padding: 9px 0; }
+  .unit-price { font-size: 14px; color: #8e99a4; padding: 9px 0; }
+  .computed { font-size: 16px; font-weight: 700; color: #7c5cfc; padding: 9px 0; }
+  .computed.highlight { color: #22c55e; }
+
+  .header-row {
+    display: grid; grid-template-columns: 1.5fr 0.8fr 1fr 1fr 1fr; gap: 12px;
+    padding: 0 24px 8px; font-size: 13px; color: #8e99a4; font-weight: 500;
+  }
+
+  /* 按钮 */
+  .btn-remove {
+    background: none; border: none; color: #e74c3c; cursor: pointer;
+    font-size: 18px; padding: 8px; border-radius: 8px; transition: background 0.2s;
+  }
+  .btn-remove:hover { background: #fef2f2; }
+
+  .btn-add {
+    background: #fff; border: 2px dashed #d5dae1; border-radius: 14px;
+    color: #7c5cfc; padding: 14px; width: 100%; cursor: pointer;
+    font-size: 14px; font-weight: 600; transition: all 0.2s; margin-bottom: 24px;
+  }
+  .btn-add:hover { border-color: #7c5cfc; background: #f9f7ff; }
+
+  .btn-primary {
+    background: #1a1a2e; color: white; border: none; border-radius: 10px;
+    padding: 10px 24px; font-size: 14px; cursor: pointer; font-weight: 600;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #2d2d4a; }
+  .btn-secondary {
+    background: #f0f2f5; color: #4a5568; border: none; border-radius: 10px;
+    padding: 10px 24px; font-size: 14px; cursor: pointer; font-weight: 500;
+  }
+  .btn-secondary:hover { background: #e2e6eb; }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+
+  /* 汇总 */
+  .summary {
+    background: #fff; border: 1px solid #e8ecf1; border-radius: 16px;
+    padding: 28px 32px; margin-top: 24px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .summary-item { text-align: center; }
+  .summary-item .s-label { font-size: 13px; color: #8e99a4; margin-bottom: 8px; }
+  .summary-item .s-value { font-size: 28px; font-weight: 800; }
+  .summary-item .s-value.cost { color: #1a1a2e; }
+  .summary-item .s-value.rate { color: #7c5cfc; }
+  .summary-item .s-value.profit { color: #22c55e; }
+  .summary-item .s-unit { font-size: 12px; color: #bcc3cd; margin-top: 4px; }
+
+  /* 表格 */
+  .data-table {
+    width: 100%; border-collapse: collapse; background: #fff;
+    border-radius: 14px; overflow: hidden;
+    border: 1px solid #e8ecf1;
+  }
+  .data-table th {
+    background: #f8f9fb; padding: 13px 16px; text-align: left;
+    font-size: 13px; color: #8e99a4; font-weight: 600;
+  }
+  .data-table td {
+    padding: 13px 16px; font-size: 14px; border-top: 1px solid #f0f2f5;
+  }
+  .data-table a { text-decoration: none; font-weight: 500; }
+
+  .empty-hint {
+    text-align: center; padding: 48px; color: #bcc3cd; font-size: 14px;
+    background: #fff; border-radius: 14px; border: 1px solid #e8ecf1;
+    margin-bottom: 24px;
+  }
+
+  /* 补回空 */
+  .topup-form {
+    display: grid; grid-template-columns: 1fr 1fr 0.8fr 1fr 1fr auto;
+    gap: 12px; align-items: end;
+  }
+  .topup-record {
+    display: flex; align-items: center; gap: 14px; padding: 14px 0;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .topup-record:last-child { border-bottom: none; }
+  .person-tag {
+    padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .person-tag.p0 { background: #e8f4fd; color: #2b7de9; }
+  .person-tag.p1 { background: #f3e8ff; color: #8b5cf6; }
+  .person-tag.p2 { background: #e6faf0; color: #16a34a; }
+  .person-tag.p3 { background: #fff3e6; color: #e67e22; }
+  .topup-amount { font-size: 18px; font-weight: 700; color: #1a1a2e; flex-shrink: 0; }
+  .topup-meta { font-size: 13px; color: #6b7685; flex: 1; }
+  .topup-time { font-size: 12px; color: #bcc3cd; flex-shrink: 0; }
+
+  .topup-summary {
+    background: #fff; border: 1px solid #e8ecf1; border-radius: 14px;
+    padding: 20px; margin-bottom: 20px;
+    display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .ts-item { text-align: center; flex: 1; min-width: 120px; }
+  .ts-label { font-size: 12px; color: #8e99a4; margin-bottom: 4px; }
+  .ts-value { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+  .ts-value.green { color: #22c55e; }
+
+  /* 响应式 */
+  @media (max-width: 768px) {
+    .navbar { padding: 0 16px; }
+    .brand-name { font-size: 15px; }
+    .brand { margin-right: 16px; }
+    .nav-tab { padding: 6px 12px; font-size: 13px; }
+    .main { padding: 20px 16px; }
+    .config-card { grid-template-columns: 1fr; }
+    .calc-card { grid-template-columns: 1fr 1fr; }
+    .header-row { display: none; }
+    .summary { grid-template-columns: 1fr; padding: 20px; }
+    .topup-form { grid-template-columns: 1fr 1fr; }
+    .topup-record { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ---- 导航栏 ---- -->
+<nav class="navbar">
+  <div class="brand">
+    <div class="brand-icon">助</div>
+    <div>
+      <div class="brand-name">小黑小白</div>
+      <div class="brand-sub">运营管理小助手</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('calc')">月度结算</button>
+    <button class="nav-tab" onclick="switchTab('config')">模型配置 <span class="nav-badge purple" id="configCount">0</span></button>
+    <button class="nav-tab" onclick="switchTab('history')">历史记录</button>
+    <button class="nav-tab" onclick="switchTab('topup')">补回空 <span class="nav-badge orange" id="topupCount">0</span></button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- ========== 月度结算 ========== -->
+  <div class="panel active" id="panel-calc">
+    <div class="page-title">月度结算</div>
+    <div class="page-desc">输入各模型的调用次数，自动计算进货总额与 20% 提成</div>
+
+    <div class="month-row">
+      <label>结算月份</label>
+      <input type="month" id="monthPicker" />
+    </div>
+
+    <div id="calcEmpty" class="empty-hint" style="display:none;">
+      还没有配置模型，请先到「模型配置」添加模型和单价。
+    </div>
+
+    <div class="header-row" id="calcHeader">
+      <div>模型</div><div>单价</div><div>调用次数</div><div>进货总额</div><div>20% 提成</div>
+    </div>
+    <div id="calcList"></div>
+
+    <div class="summary">
+      <div class="summary-item">
+        <div class="s-label">进货总额</div>
+        <div class="s-value cost" id="totalCost">¥0.00</div>
+        <div class="s-unit">所有模型合计</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">提成比例</div>
+        <div class="s-value rate">20%</div>
+        <div class="s-unit">固定比例</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">应付提成</div>
+        <div class="s-value profit" id="totalProfit">¥0.00</div>
+        <div class="s-unit">进货总额 × 20%</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="saveRecord()">保存本月记录</button>
+      <button class="btn-secondary" onclick="exportCSV()">导出 CSV</button>
+    </div>
+  </div>
+
+  <!-- ========== 模型配置 ========== -->
+  <div class="panel" id="panel-config">
+    <div class="page-title">模型配置</div>
+    <div class="page-desc">预设模型名称和进货单价，保存后每月结算只需输入调用次数</div>
+    <div id="configList"></div>
+    <button class="btn-add" onclick="addConfigModel()">+ 添加模型</button>
+    <button class="btn-primary" onclick="saveConfig()">保存配置</button>
+  </div>
+
+  <!-- ========== 历史记录 ========== -->
+  <div class="panel" id="panel-history">
+    <div class="page-title">历史记录</div>
+    <div class="page-desc">每月结算的存档记录</div>
+    <table class="data-table">
+      <thead>
+        <tr><th>月份</th><th>模型数</th><th>总调用次数</th><th>进货总额</th><th>20% 提成</th><th>操作</th></tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+    <div class="actions">
+      <button class="btn-secondary" onclick="clearHistory()">清空历史</button>
+    </div>
+  </div>
+
+  <!-- ========== 补回空 ========== -->
+  <div class="panel" id="panel-topup">
+    <div class="page-title">补回空</div>
+    <div class="page-desc">记录用户补款，标注谁经手、防止重复操作</div>
+
+    <!-- 额度换算器 -->
+    <div class="card" style="margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <span style="font-size:13px;color:#8e99a4;font-weight:500;">额度换算</span>
+      <div class="field" style="flex:1;min-width:140px;">
+        <label>额度数值</label>
+        <input type="number" min="0" id="quotaInput" placeholder="100000" oninput="quotaToYuan()" />
+      </div>
+      <span style="font-size:20px;color:#bcc3cd;">⇄</span>
+      <div class="field" style="flex:1;min-width:140px;">
+        <label>对应金额（元）</label>
+        <input type="number" min="0" step="0.01" id="yuanInput" placeholder="0.20" oninput="yuanToQuota()" />
+      </div>
+      <span style="font-size:12px;color:#bcc3cd;">100000 额度 = ¥0.2</span>
+    </div>
+
+    <div class="topup-summary" id="topupSummary"></div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="topup-form">
+        <div class="field">
+          <label>用户名</label>
+          <input type="text" id="topupUser" placeholder="哪个用户" />
+        </div>
+        <div class="field">
+          <label>经手人</label>
+          <input type="text" id="topupHandler" placeholder="谁操作的" />
+        </div>
+        <div class="field">
+          <label>金额（元）</label>
+          <input type="number" step="0.01" min="0" id="topupAmount" placeholder="0.00" />
+        </div>
+        <div class="field">
+          <label>日期</label>
+          <input type="date" id="topupDate" />
+        </div>
+        <div class="field">
+          <label>备注（选填）</label>
+          <input type="text" id="topupNote" placeholder="" />
+        </div>
+        <button class="btn-primary" onclick="addTopup()" style="height:38px;">添加</button>
+      </div>
+    </div>
+
+    <div class="card" id="topupListCard">
+      <div id="topupList"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-secondary" onclick="clearTopups()">清空所有记录</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ---- 数据 ----
+  let configModels = JSON.parse(localStorage.getItem('api_config_models') || '[]');
+  let callCounts = {};
+  let historyData = JSON.parse(localStorage.getItem('api_calc_history') || '[]');
+  let topupData = JSON.parse(localStorage.getItem('api_topup_records') || '[]');
+  const PERSON_COLORS = ['p0','p1','p2','p3'];
+  let personColorMap = {};
+
+  const now = new Date();
+  document.getElementById('monthPicker').value =
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  document.getElementById('topupDate').value =
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+
+  // ---- Tab ----
+  const TAB_NAMES = ['calc','config','history','topup'];
+  function switchTab(name) {
+    document.querySelectorAll('.nav-tab').forEach((t, i) => {
+      t.classList.toggle('active', TAB_NAMES[i] === name);
+    });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'calc') renderCalc();
+    if (name === 'config') renderConfig();
+    if (name === 'topup') renderTopups();
+    if (name === 'history') renderHistory();
+  }
+
+  // ---- 模型配置 ----
+  function addConfigModel() {
+    configModels.push({ name: '', price: '' });
+    renderConfig();
+    setTimeout(() => {
+      const inputs = document.querySelectorAll('#configList input[data-field="name"]');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }, 50);
+  }
+  function removeConfigModel(idx) { configModels.splice(idx, 1); renderConfig(); }
+  function updateConfigModel(idx, field, value) { configModels[idx][field] = value; }
+
+  function saveConfig() {
+    configModels = configModels.filter(m => m.name.trim() !== '');
+    localStorage.setItem('api_config_models', JSON.stringify(configModels));
+    document.getElementById('configCount').textContent = configModels.length;
+    renderConfig();
+    alert('模型配置已保存（共 ' + configModels.length + ' 个模型）');
+  }
+
+  function renderConfig() {
+    document.getElementById('configCount').textContent = configModels.length;
+    const list = document.getElementById('configList');
+    if (configModels.length === 0) {
+      list.innerHTML = '<div class="empty-hint">还没有添加任何模型，点击下方按钮添加。</div>';
+      return;
+    }
+    list.innerHTML = configModels.map((m, i) => `
+      <div class="card config-card">
+        <div class="field">
+          <label>模型 / 供应商名称</label>
+          <input type="text" data-field="name" placeholder="如: GPT-4o / Claude" value="${esc(m.name)}"
+            oninput="updateConfigModel(${i}, 'name', this.value)" />
+        </div>
+        <div class="field">
+          <label>进货单价（元/次）</label>
+          <input type="number" step="0.0001" min="0" placeholder="0.02" value="${m.price}"
+            oninput="updateConfigModel(${i}, 'price', this.value)" />
+        </div>
+        <button class="btn-remove" onclick="removeConfigModel(${i})" title="删除">✕</button>
+      </div>
+    `).join('');
+  }
+
+  // ---- 月度结算 ----
+  function renderCalc() {
+    const list = document.getElementById('calcList');
+    const empty = document.getElementById('calcEmpty');
+    const header = document.getElementById('calcHeader');
+    if (configModels.length === 0) {
+      empty.style.display = 'block'; header.style.display = 'none'; list.innerHTML = ''; return;
+    }
+    empty.style.display = 'none'; header.style.display = '';
+    list.innerHTML = configModels.map((m, i) => {
+      const calls = callCounts[m.name] || '';
+      const c = parseInt(calls) || 0;
+      const price = parseFloat(m.price) || 0;
+      const total = price * c;
+      const profit = total * 0.2;
+      return `
+        <div class="card calc-card">
+          <div class="model-name">${esc(m.name)}</div>
+          <div class="unit-price">¥${price}/次</div>
+          <div class="field">
+            <input type="number" min="0" placeholder="输入调用次数" value="${calls}"
+              oninput="onCallInput('${esc(m.name)}', ${price}, this)" />
+          </div>
+          <div class="computed">¥${total.toFixed(4)}</div>
+          <div class="computed highlight">¥${profit.toFixed(4)}</div>
+        </div>`;
+    }).join('');
+    renderSummary();
+  }
+
+  function onCallInput(name, price, el) {
+    callCounts[name] = el.value;
+    const c = parseInt(el.value) || 0;
+    const total = price * c;
+    const card = el.closest('.calc-card');
+    card.querySelectorAll('.computed')[0].textContent = '¥' + total.toFixed(4);
+    card.querySelectorAll('.computed')[1].textContent = '¥' + (total * 0.2).toFixed(4);
+    renderSummary();
+  }
+
+  function renderSummary() {
+    let totalCost = 0;
+    configModels.forEach(m => {
+      totalCost += (parseFloat(m.price) || 0) * (parseInt(callCounts[m.name]) || 0);
+    });
+    document.getElementById('totalCost').textContent = '¥' + totalCost.toFixed(4);
+    document.getElementById('totalProfit').textContent = '¥' + (totalCost * 0.2).toFixed(4);
+  }
+
+  // ---- 额度换算 (100000 = ¥0.2) ----
+  const QUOTA_RATE = 0.2 / 100000; // 1额度 = ¥0.000002
+  function quotaToYuan() {
+    const q = parseFloat(document.getElementById('quotaInput').value) || 0;
+    document.getElementById('yuanInput').value = q ? (q * QUOTA_RATE).toFixed(4) : '';
+  }
+  function yuanToQuota() {
+    const y = parseFloat(document.getElementById('yuanInput').value) || 0;
+    document.getElementById('quotaInput').value = y ? Math.round(y / QUOTA_RATE) : '';
+  }
+
+  // ---- 补回空 ----
+  function getPersonColor(name) {
+    if (!personColorMap[name]) {
+      const idx = Object.keys(personColorMap).length % PERSON_COLORS.length;
+      personColorMap[name] = PERSON_COLORS[idx];
+    }
+    return personColorMap[name];
+  }
+
+  function addTopup() {
+    const user = document.getElementById('topupUser').value.trim();
+    const handler = document.getElementById('topupHandler').value.trim();
+    const amount = document.getElementById('topupAmount').value;
+    const date = document.getElementById('topupDate').value;
+    const note = document.getElementById('topupNote').value.trim();
+
+    if (!user) { alert('请填写用户名'); return; }
+    if (!handler) { alert('请填写经手人'); return; }
+    if (!amount || parseFloat(amount) <= 0) { alert('请填写金额'); return; }
+    if (!date) { alert('请选择日期'); return; }
+
+    topupData.unshift({
+      id: Date.now(), user, handler,
+      amount: parseFloat(amount), note, date,
+      createdAt: new Date().toLocaleString('zh-CN')
+    });
+    localStorage.setItem('api_topup_records', JSON.stringify(topupData));
+    document.getElementById('topupUser').value = '';
+    document.getElementById('topupAmount').value = '';
+    document.getElementById('topupNote').value = '';
+    renderTopups();
+  }
+
+  function deleteTopup(id) {
+    if (!confirm('确定删除这条记录？')) return;
+    topupData = topupData.filter(t => t.id !== id);
+    localStorage.setItem('api_topup_records', JSON.stringify(topupData));
+    renderTopups();
+  }
+
+  function clearTopups() {
+    if (!confirm('确定清空所有补回空记录？')) return;
+    topupData = [];
+    localStorage.setItem('api_topup_records', '[]');
+    renderTopups();
+  }
+
+  function renderTopups() {
+    document.getElementById('topupCount').textContent = topupData.length;
+    const byHandler = {};
+    let grandTotal = 0;
+    topupData.forEach(t => {
+      const h = t.handler || t.person || '未知';
+      byHandler[h] = (byHandler[h] || 0) + t.amount;
+      grandTotal += t.amount;
+    });
+    const summaryEl = document.getElementById('topupSummary');
+    const handlers = Object.keys(byHandler);
+    if (handlers.length === 0) {
+      summaryEl.innerHTML = '<div class="ts-item" style="flex:auto;"><div class="ts-label">暂无记录</div></div>';
+    } else {
+      summaryEl.innerHTML = handlers.map(h => `
+        <div class="ts-item">
+          <div class="ts-label">${esc(h)} 经手</div>
+          <div class="ts-value">¥${byHandler[h].toFixed(2)}</div>
+        </div>
+      `).join('') + `<div class="ts-item"><div class="ts-label">总计</div><div class="ts-value green">¥${grandTotal.toFixed(2)}</div></div>`;
+    }
+    const listEl = document.getElementById('topupList');
+    if (topupData.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center;padding:32px;color:#bcc3cd;">还没有记录</div>';
+      return;
+    }
+    listEl.innerHTML = topupData.map(t => {
+      const handler = t.handler || t.person || '未知';
+      const user = t.user || t.person || '未知';
+      return `
+      <div class="topup-record">
+        <span class="person-tag ${getPersonColor(handler)}">${esc(handler)}</span>
+        <span class="topup-meta" style="flex-shrink:0;">给 <strong style="color:#1a1a2e;">${esc(user)}</strong> 补款</span>
+        <span class="topup-amount">¥${t.amount.toFixed(2)}</span>
+        <span class="topup-time">${t.date}</span>
+        ${t.note ? '<span class="topup-meta" style="color:#bcc3cd;">' + esc(t.note) + '</span>' : ''}
+        <button class="btn-remove" onclick="deleteTopup(${t.id})" title="删除">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  // ---- 保存 / 历史 ----
+  function saveRecord() {
+    const month = document.getElementById('monthPicker').value;
+    if (!month) { alert('请选择月份'); return; }
+    if (configModels.length === 0) { alert('请先配置模型'); return; }
+    let totalCalls = 0, totalCost = 0;
+    const details = configModels.map(m => {
+      const c = parseInt(callCounts[m.name]) || 0;
+      const p = parseFloat(m.price) || 0;
+      totalCalls += c; totalCost += p * c;
+      return { name: m.name, price: m.price, calls: c };
+    });
+    historyData = historyData.filter(h => h.month !== month);
+    historyData.push({ month, modelCount: configModels.length, totalCalls, totalCost, profit: totalCost * 0.2, details });
+    historyData.sort((a, b) => b.month.localeCompare(a.month));
+    localStorage.setItem('api_calc_history', JSON.stringify(historyData));
+    alert('已保存 ' + month + ' 的记录');
+  }
+
+  function loadRecord(month) {
+    const rec = historyData.find(h => h.month === month);
+    if (!rec) return;
+    document.getElementById('monthPicker').value = month;
+    callCounts = {};
+    rec.details.forEach(d => { callCounts[d.name] = d.calls; });
+    switchTab('calc');
+  }
+
+  function deleteRecord(month) {
+    if (!confirm('确定删除 ' + month + ' 的记录？')) return;
+    historyData = historyData.filter(h => h.month !== month);
+    localStorage.setItem('api_calc_history', JSON.stringify(historyData));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const tbody = document.getElementById('historyBody');
+    if (historyData.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#bcc3cd;padding:32px;">暂无历史记录</td></tr>';
+      return;
+    }
+    tbody.innerHTML = historyData.map(h => `
+      <tr>
+        <td>${h.month}</td><td>${h.modelCount}</td>
+        <td>${h.totalCalls.toLocaleString()}</td>
+        <td>¥${h.totalCost.toFixed(4)}</td>
+        <td style="color:#22c55e;font-weight:600;">¥${h.profit.toFixed(4)}</td>
+        <td>
+          <a href="#" onclick="loadRecord('${h.month}');return false;" style="color:#7c5cfc;margin-right:12px;">加载</a>
+          <a href="#" onclick="deleteRecord('${h.month}');return false;" style="color:#e74c3c;">删除</a>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function exportCSV() {
+    if (historyData.length === 0) { alert('暂无记录可导出'); return; }
+    let csv = '﻿月份,模型数,总调用次数,进货总额,20%提成\n';
+    historyData.forEach(h => {
+      csv += `${h.month},${h.modelCount},${h.totalCalls},${h.totalCost.toFixed(4)},${h.profit.toFixed(4)}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'api_monthly_settlement.csv';
+    a.click();
+  }
+
+  function clearHistory() {
+    if (!confirm('确定清空所有历史记录？')) return;
+    historyData = [];
+    localStorage.setItem('api_calc_history', '[]');
+    renderHistory();
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // 初始渲染
+  renderCalc(); renderHistory(); renderTopups();
+  document.getElementById('configCount').textContent = configModels.length;
+</script>
+</body>
+</html>
