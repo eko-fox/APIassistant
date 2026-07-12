@@ -8,53 +8,26 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
-    background: #f5f7fa;
-    color: #1a1a2e;
-    min-height: 100vh;
+    background: #f5f7fa; color: #1a1a2e; min-height: 100vh;
   }
-
-  /* ---- 顶部导航 ---- */
   .navbar {
-    background: #fff;
-    border-bottom: 1px solid #e8ecf1;
-    padding: 0 32px;
-    display: flex;
-    align-items: center;
-    height: 60px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    background: #fff; border-bottom: 1px solid #e8ecf1; padding: 0 32px;
+    display: flex; align-items: center; height: 60px;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-right: 40px;
-    flex-shrink: 0;
-  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-right: 40px; flex-shrink: 0; }
   .brand-icon {
-    width: 34px; height: 34px;
-    background: linear-gradient(135deg, #1a1a2e, #4a4a6a);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; background: linear-gradient(135deg, #1a1a2e, #4a4a6a);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
     font-size: 16px; color: #fff;
   }
-  .brand-name {
-    font-size: 17px; font-weight: 700; color: #1a1a2e;
-  }
-  .brand-sub {
-    font-size: 12px; color: #8e99a4; font-weight: 400;
-  }
-
-  .nav-tabs {
-    display: flex; gap: 4px; flex: 1;
-  }
+  .brand-name { font-size: 17px; font-weight: 700; color: #1a1a2e; }
+  .brand-sub { font-size: 12px; color: #8e99a4; font-weight: 400; }
+  .nav-tabs { display: flex; gap: 4px; flex: 1; }
   .nav-tab {
-    padding: 8px 18px; border-radius: 8px; cursor: pointer;
-    font-size: 14px; font-weight: 500; border: none;
-    background: transparent; color: #6b7685; transition: all 0.2s;
-    white-space: nowrap;
+    padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 14px;
+    font-weight: 500; border: none; background: transparent; color: #6b7685;
+    transition: all 0.2s; white-space: nowrap;
   }
   .nav-tab:hover { background: #f0f2f5; color: #1a1a2e; }
   .nav-tab.active { background: #1a1a2e; color: #fff; }
@@ -64,68 +37,32 @@
   }
   .nav-badge.purple { background: #eee8ff; color: #7c5cfc; }
   .nav-badge.orange { background: #fff3e6; color: #e67e22; }
-
-  /* ---- 主体 ---- */
   .main { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
-
   .panel { display: none; }
   .panel.active { display: block; }
-
-  .page-title {
-    font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;
-  }
+  .page-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
   .page-desc { font-size: 14px; color: #8e99a4; margin-bottom: 28px; }
-
-  /* ---- 卡片 ---- */
   .card {
-    background: #fff;
-    border: 1px solid #e8ecf1;
-    border-radius: 14px;
-    padding: 20px 24px;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    background: #fff; border: 1px solid #e8ecf1; border-radius: 14px;
+    padding: 20px 24px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
   }
-
-  /* ---- 表单元素 ---- */
-  .field label {
-    display: block; font-size: 12px; color: #8e99a4;
-    margin-bottom: 5px; font-weight: 500;
-  }
+  .field label { display: block; font-size: 12px; color: #8e99a4; margin-bottom: 5px; font-weight: 500; }
   .field input, .field select {
-    width: 100%;
-    background: #f5f7fa;
-    border: 1px solid #e0e4ea;
-    border-radius: 8px;
-    color: #1a1a2e;
-    padding: 9px 12px;
-    font-size: 14px;
-    transition: all 0.2s;
-    font-family: inherit;
+    width: 100%; background: #f5f7fa; border: 1px solid #e0e4ea; border-radius: 8px;
+    color: #1a1a2e; padding: 9px 12px; font-size: 14px; transition: all 0.2s; font-family: inherit;
   }
   .field input:focus, .field select:focus {
-    outline: none;
-    border-color: #7c5cfc;
-    background: #fff;
+    outline: none; border-color: #7c5cfc; background: #fff;
     box-shadow: 0 0 0 3px rgba(124,92,252,0.1);
   }
   .field input::placeholder { color: #bcc3cd; }
-
-  /* 月份行 */
-  .month-row {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
-  }
+  .month-row { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
   .month-row label { font-size: 14px; color: #8e99a4; font-weight: 500; }
   .month-row input {
     background: #fff; border: 1px solid #e0e4ea; border-radius: 8px;
     color: #1a1a2e; padding: 8px 12px; font-size: 14px;
   }
-
-  /* 配置卡片 */
-  .config-card {
-    display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 12px; align-items: end;
-  }
-
-  /* 结算卡片 */
+  .config-card { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 12px; align-items: end; }
   .calc-card {
     display: grid; grid-template-columns: 1.5fr 0.8fr 1fr 1fr 1fr; gap: 12px; align-items: end;
   }
@@ -133,30 +70,24 @@
   .unit-price { font-size: 14px; color: #8e99a4; padding: 9px 0; }
   .computed { font-size: 16px; font-weight: 700; color: #7c5cfc; padding: 9px 0; }
   .computed.highlight { color: #22c55e; }
-
   .header-row {
     display: grid; grid-template-columns: 1.5fr 0.8fr 1fr 1fr 1fr; gap: 12px;
     padding: 0 24px 8px; font-size: 13px; color: #8e99a4; font-weight: 500;
   }
-
-  /* 按钮 */
   .btn-remove {
     background: none; border: none; color: #e74c3c; cursor: pointer;
     font-size: 18px; padding: 8px; border-radius: 8px; transition: background 0.2s;
   }
   .btn-remove:hover { background: #fef2f2; }
-
   .btn-add {
     background: #fff; border: 2px dashed #d5dae1; border-radius: 14px;
     color: #7c5cfc; padding: 14px; width: 100%; cursor: pointer;
     font-size: 14px; font-weight: 600; transition: all 0.2s; margin-bottom: 24px;
   }
   .btn-add:hover { border-color: #7c5cfc; background: #f9f7ff; }
-
   .btn-primary {
     background: #1a1a2e; color: white; border: none; border-radius: 10px;
-    padding: 10px 24px; font-size: 14px; cursor: pointer; font-weight: 600;
-    transition: background 0.2s;
+    padding: 10px 24px; font-size: 14px; cursor: pointer; font-weight: 600; transition: background 0.2s;
   }
   .btn-primary:hover { background: #2d2d4a; }
   .btn-secondary {
@@ -165,8 +96,6 @@
   }
   .btn-secondary:hover { background: #e2e6eb; }
   .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
-
-  /* 汇总 */
   .summary {
     background: #fff; border: 1px solid #e8ecf1; border-radius: 16px;
     padding: 28px 32px; margin-top: 24px;
@@ -180,29 +109,20 @@
   .summary-item .s-value.rate { color: #7c5cfc; }
   .summary-item .s-value.profit { color: #22c55e; }
   .summary-item .s-unit { font-size: 12px; color: #bcc3cd; margin-top: 4px; }
-
-  /* 表格 */
   .data-table {
     width: 100%; border-collapse: collapse; background: #fff;
-    border-radius: 14px; overflow: hidden;
-    border: 1px solid #e8ecf1;
+    border-radius: 14px; overflow: hidden; border: 1px solid #e8ecf1;
   }
   .data-table th {
     background: #f8f9fb; padding: 13px 16px; text-align: left;
     font-size: 13px; color: #8e99a4; font-weight: 600;
   }
-  .data-table td {
-    padding: 13px 16px; font-size: 14px; border-top: 1px solid #f0f2f5;
-  }
+  .data-table td { padding: 13px 16px; font-size: 14px; border-top: 1px solid #f0f2f5; }
   .data-table a { text-decoration: none; font-weight: 500; }
-
   .empty-hint {
     text-align: center; padding: 48px; color: #bcc3cd; font-size: 14px;
-    background: #fff; border-radius: 14px; border: 1px solid #e8ecf1;
-    margin-bottom: 24px;
+    background: #fff; border-radius: 14px; border: 1px solid #e8ecf1; margin-bottom: 24px;
   }
-
-  /* 补回空 */
   .topup-form {
     display: grid; grid-template-columns: 1fr 1fr 0.8fr 1fr 1fr auto;
     gap: 12px; align-items: end;
@@ -212,10 +132,7 @@
     border-bottom: 1px solid #f0f2f5;
   }
   .topup-record:last-child { border-bottom: none; }
-  .person-tag {
-    padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;
-    flex-shrink: 0;
-  }
+  .person-tag { padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; flex-shrink: 0; }
   .person-tag.p0 { background: #e8f4fd; color: #2b7de9; }
   .person-tag.p1 { background: #f3e8ff; color: #8b5cf6; }
   .person-tag.p2 { background: #e6faf0; color: #16a34a; }
@@ -223,19 +140,16 @@
   .topup-amount { font-size: 18px; font-weight: 700; color: #1a1a2e; flex-shrink: 0; }
   .topup-meta { font-size: 13px; color: #6b7685; flex: 1; }
   .topup-time { font-size: 12px; color: #bcc3cd; flex-shrink: 0; }
-
   .topup-summary {
     background: #fff; border: 1px solid #e8ecf1; border-radius: 14px;
-    padding: 20px; margin-bottom: 20px;
-    display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    padding: 20px; margin-bottom: 20px; display: flex; gap: 24px;
+    flex-wrap: wrap; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
   }
   .ts-item { text-align: center; flex: 1; min-width: 120px; }
   .ts-label { font-size: 12px; color: #8e99a4; margin-bottom: 4px; }
   .ts-value { font-size: 20px; font-weight: 700; color: #1a1a2e; }
   .ts-value.green { color: #22c55e; }
-
-  /* 响应式 */
+  .loading { text-align: center; padding: 20px; color: #8e99a4; font-size: 14px; }
   @media (max-width: 768px) {
     .navbar { padding: 0 16px; }
     .brand-name { font-size: 15px; }
@@ -253,7 +167,6 @@
 </head>
 <body>
 
-<!-- ---- 导航栏 ---- -->
 <nav class="navbar">
   <div class="brand">
     <div class="brand-icon">助</div>
@@ -272,25 +185,20 @@
 
 <div class="main">
 
-  <!-- ========== 月度结算 ========== -->
   <div class="panel active" id="panel-calc">
     <div class="page-title">月度结算</div>
     <div class="page-desc">输入各模型的调用次数，自动计算进货总额与 20% 提成</div>
-
     <div class="month-row">
       <label>结算月份</label>
       <input type="month" id="monthPicker" />
     </div>
-
     <div id="calcEmpty" class="empty-hint" style="display:none;">
       还没有配置模型，请先到「模型配置」添加模型和单价。
     </div>
-
     <div class="header-row" id="calcHeader">
       <div>模型</div><div>单价</div><div>调用次数</div><div>进货总额</div><div>20% 提成</div>
     </div>
     <div id="calcList"></div>
-
     <div class="summary">
       <div class="summary-item">
         <div class="s-label">进货总额</div>
@@ -308,14 +216,12 @@
         <div class="s-unit">进货总额 × 20%</div>
       </div>
     </div>
-
     <div class="actions">
       <button class="btn-primary" onclick="saveRecord()">保存本月记录</button>
       <button class="btn-secondary" onclick="exportCSV()">导出 CSV</button>
     </div>
   </div>
 
-  <!-- ========== 模型配置 ========== -->
   <div class="panel" id="panel-config">
     <div class="page-title">模型配置</div>
     <div class="page-desc">预设模型名称和进货单价，保存后每月结算只需输入调用次数</div>
@@ -324,7 +230,6 @@
     <button class="btn-primary" onclick="saveConfig()">保存配置</button>
   </div>
 
-  <!-- ========== 历史记录 ========== -->
   <div class="panel" id="panel-history">
     <div class="page-title">历史记录</div>
     <div class="page-desc">每月结算的存档记录</div>
@@ -339,12 +244,10 @@
     </div>
   </div>
 
-  <!-- ========== 补回空 ========== -->
   <div class="panel" id="panel-topup">
     <div class="page-title">补回空</div>
     <div class="page-desc">记录用户补款，标注谁经手、防止重复操作</div>
 
-    <!-- 额度换算器 -->
     <div class="card" style="margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
       <span style="font-size:13px;color:#8e99a4;font-weight:500;">额度换算</span>
       <div class="field" style="flex:1;min-width:140px;">
@@ -372,7 +275,7 @@
           <input type="text" id="topupHandler" placeholder="谁操作的" />
         </div>
         <div class="field">
-          <label>金额（元）</label>
+          <label>金额（选填）</label>
           <input type="number" step="0.01" min="0" id="topupAmount" placeholder="0.00" />
         </div>
         <div class="field">
@@ -398,17 +301,49 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // ---- Supabase ----
-  const SUPABASE_URL = 'https://okjltoavyvvguijbejpp.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_YWvkwe59QeLVQNZZPkXkog_wx68k6Yj';
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // ---- Supabase REST API ----
+  const SB_URL = 'https://okjltoavyvvguijbejpp.supabase.co/rest/v1';
+  const SB_KEY = 'sb_publishable_YWvkwe59QeLVQNZZPkXkog_wx68k6Yj';
+  const SB_HEADERS = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+
+  async function sbGet(table, query) {
+    const res = await fetch(SB_URL + '/' + table + '?' + (query || 'select=*'), { headers: SB_HEADERS });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+  async function sbInsert(table, data) {
+    const res = await fetch(SB_URL + '/' + table, {
+      method: 'POST', headers: SB_HEADERS, body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+  async function sbDelete(table, query) {
+    const res = await fetch(SB_URL + '/' + table + '?' + query, {
+      method: 'DELETE', headers: SB_HEADERS
+    });
+    if (!res.ok) throw new Error(await res.text());
+  }
+  async function sbUpsert(table, data) {
+    const res = await fetch(SB_URL + '/' + table, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'return=representation,resolution=merge-duplicates' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
 
   // ---- 数据 ----
-  let configModels = JSON.parse(localStorage.getItem('api_config_models') || '[]');
+  let configModels = [];
   let callCounts = {};
-  let historyData = JSON.parse(localStorage.getItem('api_calc_history') || '[]');
+  let historyData = [];
   let topupData = [];
   const PERSON_COLORS = ['p0','p1','p2','p3'];
   let personColorMap = {};
@@ -427,13 +362,21 @@
     });
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
-    if (name === 'calc') renderCalc();
-    if (name === 'config') renderConfig();
+    if (name === 'calc') loadAndRenderCalc();
+    if (name === 'config') loadConfigs();
     if (name === 'topup') loadTopups();
-    if (name === 'history') renderHistory();
+    if (name === 'history') loadHistory();
   }
 
-  // ---- 模型配置 ----
+  // ---- 模型配置 (云端) ----
+  async function loadConfigs() {
+    try {
+      const data = await sbGet('model_configs', 'select=*&order=id.asc');
+      configModels = data.map(r => ({ id: r.id, name: r.name, price: r.price }));
+    } catch(e) { console.error(e); }
+    renderConfig();
+  }
+
   function addConfigModel() {
     configModels.push({ name: '', price: '' });
     renderConfig();
@@ -445,12 +388,19 @@
   function removeConfigModel(idx) { configModels.splice(idx, 1); renderConfig(); }
   function updateConfigModel(idx, field, value) { configModels[idx][field] = value; }
 
-  function saveConfig() {
-    configModels = configModels.filter(m => m.name.trim() !== '');
-    localStorage.setItem('api_config_models', JSON.stringify(configModels));
-    document.getElementById('configCount').textContent = configModels.length;
-    renderConfig();
-    alert('模型配置已保存（共 ' + configModels.length + ' 个模型）');
+  async function saveConfig() {
+    configModels = configModels.filter(m => m.name && m.name.trim() !== '');
+    try {
+      await sbDelete('model_configs', 'id=gte.0');
+      if (configModels.length > 0) {
+        const rows = configModels.map(m => ({ name: m.name.trim(), price: parseFloat(m.price) || 0 }));
+        const saved = await sbInsert('model_configs', rows);
+        configModels = saved.map(r => ({ id: r.id, name: r.name, price: r.price }));
+      }
+      document.getElementById('configCount').textContent = configModels.length;
+      renderConfig();
+      alert('模型配置已保存（共 ' + configModels.length + ' 个模型）');
+    } catch(e) { alert('保存失败: ' + e.message); }
   }
 
   function renderConfig() {
@@ -478,6 +428,11 @@
   }
 
   // ---- 月度结算 ----
+  async function loadAndRenderCalc() {
+    await loadConfigs();
+    renderCalc();
+  }
+
   function renderCalc() {
     const list = document.getElementById('calcList');
     const empty = document.getElementById('calcEmpty');
@@ -526,8 +481,8 @@
     document.getElementById('totalProfit').textContent = '¥' + (totalCost * 0.2).toFixed(4);
   }
 
-  // ---- 额度换算 (100000 = ¥0.2) ----
-  const QUOTA_RATE = 0.2 / 100000; // 1额度 = ¥0.000002
+  // ---- 额度换算 ----
+  const QUOTA_RATE = 0.2 / 100000;
   function quotaToYuan() {
     const q = parseFloat(document.getElementById('quotaInput').value) || 0;
     document.getElementById('yuanInput').value = q ? (q * QUOTA_RATE).toFixed(4) : '';
@@ -537,7 +492,7 @@
     document.getElementById('quotaInput').value = y ? Math.round(y / QUOTA_RATE) : '';
   }
 
-  // ---- 补回空 ----
+  // ---- 补回空 (云端) ----
   function getPersonColor(name) {
     if (!personColorMap[name]) {
       const idx = Object.keys(personColorMap).length % PERSON_COLORS.length;
@@ -547,16 +502,14 @@
   }
 
   async function loadTopups() {
-    const { data, error } = await supabase
-      .from('topup_records')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) { console.error(error); return; }
-    topupData = data.map(r => ({
-      id: r.id, user: r.user_name, handler: r.handler,
-      amount: parseFloat(r.amount), note: r.note || '',
-      date: r.date, createdAt: new Date(r.created_at).toLocaleString('zh-CN')
-    }));
+    try {
+      const data = await sbGet('topup_records', 'select=*&order=created_at.desc');
+      topupData = data.map(r => ({
+        id: r.id, user: r.user_name, handler: r.handler,
+        amount: parseFloat(r.amount) || 0, note: r.note || '',
+        date: r.date, createdAt: new Date(r.created_at).toLocaleString('zh-CN')
+      }));
+    } catch(e) { console.error(e); }
     renderTopups();
   }
 
@@ -569,32 +522,35 @@
 
     if (!user) { alert('请填写用户名'); return; }
     if (!handler) { alert('请填写经手人'); return; }
-    if (!amount || parseFloat(amount) <= 0) { alert('请填写金额'); return; }
     if (!date) { alert('请选择日期'); return; }
 
-    const { error } = await db.from('topup_records').insert({
-      user_name: user, handler, amount: parseFloat(amount), note, date
-    });
-    if (error) { alert('保存失败: ' + error.message); return; }
-
-    document.getElementById('topupUser').value = '';
-    document.getElementById('topupAmount').value = '';
-    document.getElementById('topupNote').value = '';
-    await loadTopups();
+    try {
+      await sbInsert('topup_records', {
+        user_name: user, handler: handler,
+        amount: amount ? parseFloat(amount) : 0,
+        note: note, date: date
+      });
+      document.getElementById('topupUser').value = '';
+      document.getElementById('topupAmount').value = '';
+      document.getElementById('topupNote').value = '';
+      await loadTopups();
+    } catch(e) { alert('保存失败: ' + e.message); }
   }
 
   async function deleteTopup(id) {
     if (!confirm('确定删除这条记录？')) return;
-    const { error } = await db.from('topup_records').delete().eq('id', id);
-    if (error) { alert('删除失败: ' + error.message); return; }
-    await loadTopups();
+    try {
+      await sbDelete('topup_records', 'id=eq.' + id);
+      await loadTopups();
+    } catch(e) { alert('删除失败: ' + e.message); }
   }
 
   async function clearTopups() {
     if (!confirm('确定清空所有补回空记录？')) return;
-    const { error } = await db.from('topup_records').delete().gte('id', 0);
-    if (error) { alert('清空失败: ' + error.message); return; }
-    await loadTopups();
+    try {
+      await sbDelete('topup_records', 'id=gte.0');
+      await loadTopups();
+    } catch(e) { alert('清空失败: ' + e.message); }
   }
 
   function renderTopups() {
@@ -602,7 +558,7 @@
     const byHandler = {};
     let grandTotal = 0;
     topupData.forEach(t => {
-      const h = t.handler || t.person || '未知';
+      const h = t.handler || '未知';
       byHandler[h] = (byHandler[h] || 0) + t.amount;
       grandTotal += t.amount;
     });
@@ -624,13 +580,14 @@
       return;
     }
     listEl.innerHTML = topupData.map(t => {
-      const handler = t.handler || t.person || '未知';
-      const user = t.user || t.person || '未知';
+      const handler = t.handler || '未知';
+      const user = t.user || '未知';
+      const amountStr = t.amount > 0 ? '¥' + t.amount.toFixed(2) : '';
       return `
       <div class="topup-record">
         <span class="person-tag ${getPersonColor(handler)}">${esc(handler)}</span>
         <span class="topup-meta" style="flex-shrink:0;">给 <strong style="color:#1a1a2e;">${esc(user)}</strong> 补款</span>
-        <span class="topup-amount">¥${t.amount.toFixed(2)}</span>
+        ${amountStr ? '<span class="topup-amount">' + amountStr + '</span>' : ''}
         <span class="topup-time">${t.date}</span>
         ${t.note ? '<span class="topup-meta" style="color:#bcc3cd;">' + esc(t.note) + '</span>' : ''}
         <button class="btn-remove" onclick="deleteTopup(${t.id})" title="删除">✕</button>
@@ -638,8 +595,16 @@
     }).join('');
   }
 
-  // ---- 保存 / 历史 ----
-  function saveRecord() {
+  // ---- 历史记录 (云端) ----
+  async function loadHistory() {
+    try {
+      const data = await sbGet('calc_history', 'select=*&order=month.desc');
+      historyData = data;
+    } catch(e) { console.error(e); }
+    renderHistory();
+  }
+
+  async function saveRecord() {
     const month = document.getElementById('monthPicker').value;
     if (!month) { alert('请选择月份'); return; }
     if (configModels.length === 0) { alert('请先配置模型'); return; }
@@ -650,27 +615,33 @@
       totalCalls += c; totalCost += p * c;
       return { name: m.name, price: m.price, calls: c };
     });
-    historyData = historyData.filter(h => h.month !== month);
-    historyData.push({ month, modelCount: configModels.length, totalCalls, totalCost, profit: totalCost * 0.2, details });
-    historyData.sort((a, b) => b.month.localeCompare(a.month));
-    localStorage.setItem('api_calc_history', JSON.stringify(historyData));
-    alert('已保存 ' + month + ' 的记录');
+    try {
+      await sbUpsert('calc_history', {
+        month: month, model_count: configModels.length,
+        total_calls: totalCalls, total_cost: totalCost,
+        profit: totalCost * 0.2, details: details
+      });
+      alert('已保存 ' + month + ' 的记录');
+    } catch(e) { alert('保存失败: ' + e.message); }
   }
 
-  function loadRecord(month) {
+  async function loadRecord(month) {
     const rec = historyData.find(h => h.month === month);
     if (!rec) return;
     document.getElementById('monthPicker').value = month;
     callCounts = {};
-    rec.details.forEach(d => { callCounts[d.name] = d.calls; });
+    if (rec.details) {
+      rec.details.forEach(d => { callCounts[d.name] = d.calls; });
+    }
     switchTab('calc');
   }
 
-  function deleteRecord(month) {
+  async function deleteRecord(month) {
     if (!confirm('确定删除 ' + month + ' 的记录？')) return;
-    historyData = historyData.filter(h => h.month !== month);
-    localStorage.setItem('api_calc_history', JSON.stringify(historyData));
-    renderHistory();
+    try {
+      await sbDelete('calc_history', 'month=eq.' + month);
+      await loadHistory();
+    } catch(e) { alert('删除失败: ' + e.message); }
   }
 
   function renderHistory() {
@@ -681,10 +652,10 @@
     }
     tbody.innerHTML = historyData.map(h => `
       <tr>
-        <td>${h.month}</td><td>${h.modelCount}</td>
-        <td>${h.totalCalls.toLocaleString()}</td>
-        <td>¥${h.totalCost.toFixed(4)}</td>
-        <td style="color:#22c55e;font-weight:600;">¥${h.profit.toFixed(4)}</td>
+        <td>${h.month}</td><td>${h.model_count}</td>
+        <td>${(h.total_calls||0).toLocaleString()}</td>
+        <td>¥${parseFloat(h.total_cost||0).toFixed(4)}</td>
+        <td style="color:#22c55e;font-weight:600;">¥${parseFloat(h.profit||0).toFixed(4)}</td>
         <td>
           <a href="#" onclick="loadRecord('${h.month}');return false;" style="color:#7c5cfc;margin-right:12px;">加载</a>
           <a href="#" onclick="deleteRecord('${h.month}');return false;" style="color:#e74c3c;">删除</a>
@@ -697,7 +668,7 @@
     if (historyData.length === 0) { alert('暂无记录可导出'); return; }
     let csv = '﻿月份,模型数,总调用次数,进货总额,20%提成\n';
     historyData.forEach(h => {
-      csv += `${h.month},${h.modelCount},${h.totalCalls},${h.totalCost.toFixed(4)},${h.profit.toFixed(4)}\n`;
+      csv += `${h.month},${h.model_count},${h.total_calls},${parseFloat(h.total_cost).toFixed(4)},${parseFloat(h.profit).toFixed(4)}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a');
@@ -706,20 +677,21 @@
     a.click();
   }
 
-  function clearHistory() {
+  async function clearHistory() {
     if (!confirm('确定清空所有历史记录？')) return;
-    historyData = [];
-    localStorage.setItem('api_calc_history', '[]');
-    renderHistory();
+    try {
+      await sbDelete('calc_history', 'id=gte.0');
+      await loadHistory();
+    } catch(e) { alert('清空失败: ' + e.message); }
   }
 
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
-  // 初始渲染
-  renderCalc(); renderHistory(); loadTopups();
-  document.getElementById('configCount').textContent = configModels.length;
+  // 初始加载
+  loadAndRenderCalc();
+  loadHistory();
 </script>
 </body>
 </html>
