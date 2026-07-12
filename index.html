@@ -403,7 +403,7 @@
   // ---- Supabase ----
   const SUPABASE_URL = 'https://okjltoavyvvguijbejpp.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_YWvkwe59QeLVQNZZPkXkog_wx68k6Yj';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // ---- 数据 ----
   let configModels = JSON.parse(localStorage.getItem('api_config_models') || '[]');
@@ -572,7 +572,7 @@
     if (!amount || parseFloat(amount) <= 0) { alert('请填写金额'); return; }
     if (!date) { alert('请选择日期'); return; }
 
-    const { error } = await supabase.from('topup_records').insert({
+    const { error } = await db.from('topup_records').insert({
       user_name: user, handler, amount: parseFloat(amount), note, date
     });
     if (error) { alert('保存失败: ' + error.message); return; }
@@ -585,14 +585,14 @@
 
   async function deleteTopup(id) {
     if (!confirm('确定删除这条记录？')) return;
-    const { error } = await supabase.from('topup_records').delete().eq('id', id);
+    const { error } = await db.from('topup_records').delete().eq('id', id);
     if (error) { alert('删除失败: ' + error.message); return; }
     await loadTopups();
   }
 
   async function clearTopups() {
     if (!confirm('确定清空所有补回空记录？')) return;
-    const { error } = await supabase.from('topup_records').delete().gte('id', 0);
+    const { error } = await db.from('topup_records').delete().gte('id', 0);
     if (error) { alert('清空失败: ' + error.message); return; }
     await loadTopups();
   }
