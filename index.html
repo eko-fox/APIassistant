@@ -398,12 +398,18 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // ---- Supabase ----
+  const SUPABASE_URL = 'https://okjltoavyvvguijbejpp.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_YWvkwe59QeLVQNZZPkXkog_wx68k6Yj';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   // ---- 数据 ----
   let configModels = JSON.parse(localStorage.getItem('api_config_models') || '[]');
   let callCounts = {};
   let historyData = JSON.parse(localStorage.getItem('api_calc_history') || '[]');
-  let topupData = JSON.parse(localStorage.getItem('api_topup_records') || '[]');
+  let topupData = [];
   const PERSON_COLORS = ['p0','p1','p2','p3'];
   let personColorMap = {};
 
@@ -423,7 +429,7 @@
     document.getElementById('panel-' + name).classList.add('active');
     if (name === 'calc') renderCalc();
     if (name === 'config') renderConfig();
-    if (name === 'topup') renderTopups();
+    if (name === 'topup') loadTopups();
     if (name === 'history') renderHistory();
   }
 
@@ -540,7 +546,21 @@
     return personColorMap[name];
   }
 
-  function addTopup() {
+  async function loadTopups() {
+    const { data, error } = await supabase
+      .from('topup_records')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) { console.error(error); return; }
+    topupData = data.map(r => ({
+      id: r.id, user: r.user_name, handler: r.handler,
+      amount: parseFloat(r.amount), note: r.note || '',
+      date: r.date, createdAt: new Date(r.created_at).toLocaleString('zh-CN')
+    }));
+    renderTopups();
+  }
+
+  async function addTopup() {
     const user = document.getElementById('topupUser').value.trim();
     const handler = document.getElementById('topupHandler').value.trim();
     const amount = document.getElementById('topupAmount').value;
@@ -552,30 +572,29 @@
     if (!amount || parseFloat(amount) <= 0) { alert('请填写金额'); return; }
     if (!date) { alert('请选择日期'); return; }
 
-    topupData.unshift({
-      id: Date.now(), user, handler,
-      amount: parseFloat(amount), note, date,
-      createdAt: new Date().toLocaleString('zh-CN')
+    const { error } = await supabase.from('topup_records').insert({
+      user_name: user, handler, amount: parseFloat(amount), note, date
     });
-    localStorage.setItem('api_topup_records', JSON.stringify(topupData));
+    if (error) { alert('保存失败: ' + error.message); return; }
+
     document.getElementById('topupUser').value = '';
     document.getElementById('topupAmount').value = '';
     document.getElementById('topupNote').value = '';
-    renderTopups();
+    await loadTopups();
   }
 
-  function deleteTopup(id) {
+  async function deleteTopup(id) {
     if (!confirm('确定删除这条记录？')) return;
-    topupData = topupData.filter(t => t.id !== id);
-    localStorage.setItem('api_topup_records', JSON.stringify(topupData));
-    renderTopups();
+    const { error } = await supabase.from('topup_records').delete().eq('id', id);
+    if (error) { alert('删除失败: ' + error.message); return; }
+    await loadTopups();
   }
 
-  function clearTopups() {
+  async function clearTopups() {
     if (!confirm('确定清空所有补回空记录？')) return;
-    topupData = [];
-    localStorage.setItem('api_topup_records', '[]');
-    renderTopups();
+    const { error } = await supabase.from('topup_records').delete().gte('id', 0);
+    if (error) { alert('清空失败: ' + error.message); return; }
+    await loadTopups();
   }
 
   function renderTopups() {
@@ -699,7 +718,7 @@
   }
 
   // 初始渲染
-  renderCalc(); renderHistory(); renderTopups();
+  renderCalc(); renderHistory(); loadTopups();
   document.getElementById('configCount').textContent = configModels.length;
 </script>
 </body>
