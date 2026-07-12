@@ -183,6 +183,7 @@
   </div>
 </nav>
 
+<div id="diagBox" style="display:none;margin:12px auto;max-width:960px;padding:14px 20px;border-radius:10px;font-size:14px;font-family:monospace;"></div>
 <div class="main">
 
   <div class="panel active" id="panel-calc">
@@ -688,9 +689,37 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
+  // ---- 连接诊断 ----
+  async function testConnection() {
+    const box = document.getElementById('diagBox');
+    box.style.display = 'block';
+    box.innerHTML = '正在测试 Supabase 连接...';
+    try {
+      const t0 = Date.now();
+      const res = await fetch(SB_URL + '/model_configs?select=id&limit=1', {
+        headers: { 'apikey': SB_KEY }
+      });
+      const ms = Date.now() - t0;
+      const text = await res.text();
+      if (res.ok) {
+        box.innerHTML = '✅ 连接成功！响应时间: ' + ms + 'ms，状态: ' + res.status + '，数据: ' + text;
+        box.style.background = '#e6faf0'; box.style.color = '#16a34a';
+      } else {
+        box.innerHTML = '❌ 请求失败，状态: ' + res.status + '，响应: ' + text;
+        box.style.background = '#fef2f2'; box.style.color = '#e74c3c';
+      }
+    } catch(e) {
+      box.innerHTML = '❌ 网络错误: ' + e.name + ' - ' + e.message + '<br>可能原因：Supabase 在国内无法访问（被墙），或者网络不通。';
+      box.style.background = '#fef2f2'; box.style.color = '#e74c3c';
+    }
+  }
+
   // 初始加载
   loadAndRenderCalc();
   loadHistory();
+
+  // 自动测试连接
+  testConnection();
 </script>
 </body>
 </html>
