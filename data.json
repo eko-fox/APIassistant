@@ -1,5 +1,10 @@
 {
-  "models": [],
+  "models": [
+    {
+      "name": "[大金毛]gemini-2.5-pro-c",
+      "price": 0.01
+    }
+  ],
   "history": [],
   "topups": []
 }
