@@ -150,6 +150,15 @@
   .ts-value { font-size: 20px; font-weight: 700; color: #1a1a2e; }
   .ts-value.green { color: #22c55e; }
   .loading { text-align: center; padding: 20px; color: #8e99a4; font-size: 14px; }
+  .token-setup {
+    background: #fff; border: 2px solid #7c5cfc; border-radius: 14px;
+    padding: 24px; margin: 20px auto; max-width: 960px; text-align: center;
+  }
+  .token-setup input {
+    width: 320px; max-width: 80%; padding: 10px 14px; border: 1px solid #e0e4ea;
+    border-radius: 8px; font-size: 14px; margin: 12px 0;
+  }
+  .token-setup input:focus { outline: none; border-color: #7c5cfc; }
   @media (max-width: 768px) {
     .navbar { padding: 0 16px; }
     .brand-name { font-size: 15px; }
@@ -183,7 +192,14 @@
   </div>
 </nav>
 
-<div id="diagBox" style="display:none;margin:12px auto;max-width:960px;padding:14px 20px;border-radius:10px;font-size:14px;font-family:monospace;"></div>
+<div id="tokenSetup" class="token-setup" style="display:none;">
+  <div style="font-size:18px;font-weight:700;margin-bottom:8px;">首次使用：请输入 GitHub Token</div>
+  <div style="font-size:13px;color:#8e99a4;margin-bottom:12px;">Token 仅保存在你的浏览器本地，不会上传到任何地方</div>
+  <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx 或 github_pat_xxxx" />
+  <br>
+  <button class="btn-primary" onclick="saveToken()" style="margin-top:8px;">保存并开始使用</button>
+</div>
+
 <div class="main">
 
   <div class="panel active" id="panel-calc">
@@ -303,41 +319,97 @@
 </div>
 
 <script>
-  // ---- Supabase REST API ----
-  const SB_URL = 'https://okjltoavyvvguijbejpp.supabase.co/rest/v1';
-  const SB_KEY = 'sb_publishable_YWvkwe59QeLVQNZZPkXkog_wx68k6Yj';
-  const SB_HEADERS = {
-    'apikey': SB_KEY,
-    'Content-Type': 'application/json',
-    'Prefer': 'return=representation'
-  };
+  // ---- GitHub API 存储 ----
+  const GH_OWNER = 'eko-fox';
+  const GH_REPO = 'APIassistant';
+  const GH_FILE = 'data.json';
+  const GH_API = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_FILE;
 
-  async function sbGet(table, query) {
-    const res = await fetch(SB_URL + '/' + table + '?' + (query || 'select=*'), { headers: SB_HEADERS });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+  let ghToken = localStorage.getItem('gh_token') || '';
+  let fileSha = '';
+  let db = { models: [], history: [], topups: [] };
+  let saving = false;
+
+  function saveToken() {
+    const t = document.getElementById('tokenInput').value.trim();
+    if (!t) { alert('请输入 Token'); return; }
+    ghToken = t;
+    localStorage.setItem('gh_token', t);
+    document.getElementById('tokenSetup').style.display = 'none';
+    initApp();
   }
-  async function sbInsert(table, data) {
-    const res = await fetch(SB_URL + '/' + table, {
-      method: 'POST', headers: SB_HEADERS, body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+
+  function ghHeaders() {
+    return {
+      'Authorization': 'Bearer ' + ghToken,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    };
   }
-  async function sbDelete(table, query) {
-    const res = await fetch(SB_URL + '/' + table + '?' + query, {
-      method: 'DELETE', headers: SB_HEADERS
-    });
-    if (!res.ok) throw new Error(await res.text());
+
+  async function loadData() {
+    try {
+      const res = await fetch(GH_API, { headers: ghHeaders() });
+      if (res.status === 404) {
+        db = { models: [], history: [], topups: [] };
+        fileSha = '';
+        await saveData();
+        return;
+      }
+      if (res.status === 401) {
+        alert('Token 无效或已过期，请重新输入');
+        localStorage.removeItem('gh_token');
+        location.reload();
+        return;
+      }
+      if (!res.ok) throw new Error('GitHub API 错误: ' + res.status);
+      const json = await res.json();
+      fileSha = json.sha;
+      const content = atob(json.content.replace(/\n/g, ''));
+      const decoded = new TextDecoder().decode(
+        Uint8Array.from(content, c => c.charCodeAt(0))
+      );
+      db = JSON.parse(decoded);
+      if (!db.models) db.models = [];
+      if (!db.history) db.history = [];
+      if (!db.topups) db.topups = [];
+    } catch(e) {
+      console.error(e);
+      alert('加载数据失败: ' + e.message);
+    }
   }
-  async function sbUpsert(table, data) {
-    const res = await fetch(SB_URL + '/' + table, {
-      method: 'POST',
-      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation,resolution=merge-duplicates' },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+
+  async function saveData() {
+    if (saving) return;
+    saving = true;
+    try {
+      const jsonStr = JSON.stringify(db, null, 2);
+      const bytes = new TextEncoder().encode(jsonStr);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      const encoded = btoa(binary);
+      const body = {
+        message: '更新数据 ' + new Date().toLocaleString('zh-CN'),
+        content: encoded
+      };
+      if (fileSha) body.sha = fileSha;
+      const res = await fetch(GH_API, {
+        method: 'PUT',
+        headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(res.status + ': ' + err);
+      }
+      const result = await res.json();
+      fileSha = result.content.sha;
+    } catch(e) {
+      console.error(e);
+      alert('保存失败: ' + e.message);
+    } finally {
+      saving = false;
+    }
   }
 
   // ---- 数据 ----
@@ -362,21 +434,13 @@
     });
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
-    if (name === 'calc') loadAndRenderCalc();
-    if (name === 'config') loadConfigs();
-    if (name === 'topup') loadTopups();
-    if (name === 'history') loadHistory();
+    if (name === 'calc') renderCalc();
+    if (name === 'config') renderConfig();
+    if (name === 'topup') renderTopups();
+    if (name === 'history') renderHistory();
   }
 
-  // ---- 模型配置 (云端) ----
-  async function loadConfigs() {
-    try {
-      const data = await sbGet('model_configs', 'select=*&order=id.asc');
-      configModels = data.map(r => ({ id: r.id, name: r.name, price: r.price }));
-    } catch(e) { console.error(e); }
-    renderConfig();
-  }
-
+  // ---- 模型配置 ----
   function addConfigModel() {
     configModels.push({ name: '', price: '' });
     renderConfig();
@@ -390,17 +454,11 @@
 
   async function saveConfig() {
     configModels = configModels.filter(m => m.name && m.name.trim() !== '');
-    try {
-      await sbDelete('model_configs', 'id=gte.0');
-      if (configModels.length > 0) {
-        const rows = configModels.map(m => ({ name: m.name.trim(), price: parseFloat(m.price) || 0 }));
-        const saved = await sbInsert('model_configs', rows);
-        configModels = saved.map(r => ({ id: r.id, name: r.name, price: r.price }));
-      }
-      document.getElementById('configCount').textContent = configModels.length;
-      renderConfig();
-      alert('模型配置已保存（共 ' + configModels.length + ' 个模型）');
-    } catch(e) { alert('保存失败: ' + e.message); }
+    db.models = configModels.map(m => ({ name: m.name.trim(), price: parseFloat(m.price) || 0 }));
+    await saveData();
+    document.getElementById('configCount').textContent = configModels.length;
+    renderConfig();
+    alert('模型配置已保存（共 ' + configModels.length + ' 个模型）');
   }
 
   function renderConfig() {
@@ -428,11 +486,6 @@
   }
 
   // ---- 月度结算 ----
-  async function loadAndRenderCalc() {
-    await loadConfigs();
-    renderCalc();
-  }
-
   function renderCalc() {
     const list = document.getElementById('calcList');
     const empty = document.getElementById('calcEmpty');
@@ -492,25 +545,13 @@
     document.getElementById('quotaInput').value = y ? Math.round(y / QUOTA_RATE) : '';
   }
 
-  // ---- 补回空 (云端) ----
+  // ---- 补回空 ----
   function getPersonColor(name) {
     if (!personColorMap[name]) {
       const idx = Object.keys(personColorMap).length % PERSON_COLORS.length;
       personColorMap[name] = PERSON_COLORS[idx];
     }
     return personColorMap[name];
-  }
-
-  async function loadTopups() {
-    try {
-      const data = await sbGet('topup_records', 'select=*&order=created_at.desc');
-      topupData = data.map(r => ({
-        id: r.id, user: r.user_name, handler: r.handler,
-        amount: parseFloat(r.amount) || 0, note: r.note || '',
-        date: r.date, createdAt: new Date(r.created_at).toLocaleString('zh-CN')
-      }));
-    } catch(e) { console.error(e); }
-    renderTopups();
   }
 
   async function addTopup() {
@@ -524,33 +565,36 @@
     if (!handler) { alert('请填写经手人'); return; }
     if (!date) { alert('请选择日期'); return; }
 
-    try {
-      await sbInsert('topup_records', {
-        user_name: user, handler: handler,
-        amount: amount ? parseFloat(amount) : 0,
-        note: note, date: date
-      });
-      document.getElementById('topupUser').value = '';
-      document.getElementById('topupAmount').value = '';
-      document.getElementById('topupNote').value = '';
-      await loadTopups();
-    } catch(e) { alert('保存失败: ' + e.message); }
+    db.topups.unshift({
+      id: Date.now(),
+      user: user, handler: handler,
+      amount: amount ? parseFloat(amount) : 0,
+      note: note, date: date,
+      createdAt: new Date().toLocaleString('zh-CN')
+    });
+    await saveData();
+
+    document.getElementById('topupUser').value = '';
+    document.getElementById('topupAmount').value = '';
+    document.getElementById('topupNote').value = '';
+    syncFromDb();
+    renderTopups();
   }
 
   async function deleteTopup(id) {
     if (!confirm('确定删除这条记录？')) return;
-    try {
-      await sbDelete('topup_records', 'id=eq.' + id);
-      await loadTopups();
-    } catch(e) { alert('删除失败: ' + e.message); }
+    db.topups = db.topups.filter(t => t.id !== id);
+    await saveData();
+    syncFromDb();
+    renderTopups();
   }
 
   async function clearTopups() {
     if (!confirm('确定清空所有补回空记录？')) return;
-    try {
-      await sbDelete('topup_records', 'id=gte.0');
-      await loadTopups();
-    } catch(e) { alert('清空失败: ' + e.message); }
+    db.topups = [];
+    await saveData();
+    syncFromDb();
+    renderTopups();
   }
 
   function renderTopups() {
@@ -559,8 +603,8 @@
     let grandTotal = 0;
     topupData.forEach(t => {
       const h = t.handler || '未知';
-      byHandler[h] = (byHandler[h] || 0) + t.amount;
-      grandTotal += t.amount;
+      byHandler[h] = (byHandler[h] || 0) + (t.amount || 0);
+      grandTotal += (t.amount || 0);
     });
     const summaryEl = document.getElementById('topupSummary');
     const handlers = Object.keys(byHandler);
@@ -595,15 +639,7 @@
     }).join('');
   }
 
-  // ---- 历史记录 (云端) ----
-  async function loadHistory() {
-    try {
-      const data = await sbGet('calc_history', 'select=*&order=month.desc');
-      historyData = data;
-    } catch(e) { console.error(e); }
-    renderHistory();
-  }
-
+  // ---- 历史记录 ----
   async function saveRecord() {
     const month = document.getElementById('monthPicker').value;
     if (!month) { alert('请选择月份'); return; }
@@ -615,17 +651,21 @@
       totalCalls += c; totalCost += p * c;
       return { name: m.name, price: m.price, calls: c };
     });
-    try {
-      await sbUpsert('calc_history', {
-        month: month, model_count: configModels.length,
-        total_calls: totalCalls, total_cost: totalCost,
-        profit: totalCost * 0.2, details: details
-      });
-      alert('已保存 ' + month + ' 的记录');
-    } catch(e) { alert('保存失败: ' + e.message); }
+    const existing = db.history.findIndex(h => h.month === month);
+    const record = {
+      month: month, model_count: configModels.length,
+      total_calls: totalCalls, total_cost: totalCost,
+      profit: totalCost * 0.2, details: details
+    };
+    if (existing >= 0) db.history[existing] = record;
+    else db.history.unshift(record);
+
+    await saveData();
+    syncFromDb();
+    alert('已保存 ' + month + ' 的记录');
   }
 
-  async function loadRecord(month) {
+  function loadRecord(month) {
     const rec = historyData.find(h => h.month === month);
     if (!rec) return;
     document.getElementById('monthPicker').value = month;
@@ -638,10 +678,10 @@
 
   async function deleteRecord(month) {
     if (!confirm('确定删除 ' + month + ' 的记录？')) return;
-    try {
-      await sbDelete('calc_history', 'month=eq.' + month);
-      await loadHistory();
-    } catch(e) { alert('删除失败: ' + e.message); }
+    db.history = db.history.filter(h => h.month !== month);
+    await saveData();
+    syncFromDb();
+    renderHistory();
   }
 
   function renderHistory() {
@@ -679,47 +719,38 @@
 
   async function clearHistory() {
     if (!confirm('确定清空所有历史记录？')) return;
-    try {
-      await sbDelete('calc_history', 'id=gte.0');
-      await loadHistory();
-    } catch(e) { alert('清空失败: ' + e.message); }
+    db.history = [];
+    await saveData();
+    syncFromDb();
+    renderHistory();
   }
 
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
-  // ---- 连接诊断 ----
-  async function testConnection() {
-    const box = document.getElementById('diagBox');
-    box.style.display = 'block';
-    box.innerHTML = '正在测试 Supabase 连接...';
-    try {
-      const t0 = Date.now();
-      const res = await fetch(SB_URL + '/model_configs?select=id&limit=1', {
-        headers: { 'apikey': SB_KEY }
-      });
-      const ms = Date.now() - t0;
-      const text = await res.text();
-      if (res.ok) {
-        box.innerHTML = '✅ 连接成功！响应时间: ' + ms + 'ms，状态: ' + res.status + '，数据: ' + text;
-        box.style.background = '#e6faf0'; box.style.color = '#16a34a';
-      } else {
-        box.innerHTML = '❌ 请求失败，状态: ' + res.status + '，响应: ' + text;
-        box.style.background = '#fef2f2'; box.style.color = '#e74c3c';
-      }
-    } catch(e) {
-      box.innerHTML = '❌ 网络错误: ' + e.name + ' - ' + e.message + '<br>可能原因：Supabase 在国内无法访问（被墙），或者网络不通。';
-      box.style.background = '#fef2f2'; box.style.color = '#e74c3c';
-    }
+  // ---- 同步内存 ----
+  function syncFromDb() {
+    configModels = (db.models || []).map(m => ({ name: m.name, price: m.price }));
+    historyData = db.history || [];
+    topupData = db.topups || [];
   }
 
-  // 初始加载
-  loadAndRenderCalc();
-  loadHistory();
+  // ---- 初始化 ----
+  async function initApp() {
+    await loadData();
+    syncFromDb();
+    renderCalc();
+    renderConfig();
+    renderHistory();
+    renderTopups();
+  }
 
-  // 自动测试连接
-  testConnection();
+  if (!ghToken) {
+    document.getElementById('tokenSetup').style.display = 'block';
+  } else {
+    initApp();
+  }
 </script>
 </body>
 </html>
