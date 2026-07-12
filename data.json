@@ -1,8 +1,40 @@
 {
   "models": [
     {
-      "name": "[大金毛]gemini-2.5-pro-c",
+      "name": "79[大金毛]gemini-2.5-pro-c",
       "price": 0.01
+    },
+    {
+      "name": "114金贵宾[官计次0.60]dlaude4-6-op",
+      "price": 0.2
+    },
+    {
+      "name": "114金贵宾计次0.44]dlaude-opus-4-6-thinking[",
+      "price": 0.2
+    },
+    {
+      "name": "116金边牧[计次0.06]gemini-3-pro-previ/3.1",
+      "price": 0.015
+    },
+    {
+      "name": "153[黑边牧][计次0.03]gemini-flash-lite-latest-search-max",
+      "price": 0.0065
+    },
+    {
+      "name": "154[黑边牧][计次0.03]gemini-3-flash-preview",
+      "price": 0.01
+    },
+    {
+      "name": "155黑边牧[计次0.06]gemini-3.1-pro-preview",
+      "price": 0.015
+    },
+    {
+      "name": "156黑边牧l计次0.03]gemini-3.5-flash-hi",
+      "price": 0.01
+    },
+    {
+      "name": "135金贵宾[计次0.08]claude-opus-4-6",
+      "price": 0.04
     }
   ],
   "history": [],
