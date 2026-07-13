@@ -1111,6 +1111,22 @@
       }));
       db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
       await saveData();
+    } else if (db.members.length > 0 && INIT_MEMBERS.length > 0) {
+      // 自动补入缺失成员
+      const existNames = new Set(db.members.map(m => m.name));
+      const missing = INIT_MEMBERS.filter(m => !existNames.has(m.name));
+      if (missing.length > 0) {
+        let id = Date.now();
+        missing.forEach(m => {
+          db.members.push({
+            id: id++, name: m.name, tavern: m.tavern || 1,
+            joinDate: m.joinDate || '', expiry: m.expiry,
+            disabled: m.disabled || false, note: m.note || ''
+          });
+        });
+        db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+        await saveData();
+      }
     }
     syncFromDb();
     renderCalc();
