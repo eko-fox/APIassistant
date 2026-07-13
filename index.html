@@ -79,6 +79,19 @@
     font-size: 18px; padding: 8px; border-radius: 8px; transition: background 0.2s;
   }
   .btn-remove:hover { background: #fef2f2; }
+  .btn-edit {
+    background: none; border: none; color: #7c5cfc; cursor: pointer;
+    font-size: 14px; padding: 8px; border-radius: 8px; transition: background 0.2s;
+  }
+  .btn-edit:hover { background: #f3e8ff; }
+  .edit-form {
+    background: #f9f7ff; border: 1px solid #e0d4fc; border-radius: 10px;
+    padding: 16px; margin: 8px 0; display: grid;
+    grid-template-columns: 1fr 1fr 0.8fr 1fr 1fr auto; gap: 10px; align-items: end;
+  }
+  .edit-form .field input { background: #fff; }
+  .edit-form .btn-primary { height: 38px; font-size: 13px; padding: 8px 16px; }
+  .edit-form .btn-secondary { height: 38px; font-size: 13px; padding: 8px 12px; }
   .btn-add {
     background: #fff; border: 2px dashed #d5dae1; border-radius: 14px;
     color: #7c5cfc; padding: 14px; width: 100%; cursor: pointer;
@@ -628,15 +641,54 @@
       const user = t.user || '未知';
       const amountStr = t.amount > 0 ? '¥' + t.amount.toFixed(2) : '';
       return `
-      <div class="topup-record">
-        <span class="person-tag ${getPersonColor(handler)}">${esc(handler)}</span>
-        <span class="topup-meta" style="flex-shrink:0;">给 <strong style="color:#1a1a2e;">${esc(user)}</strong> 补款</span>
-        ${amountStr ? '<span class="topup-amount">' + amountStr + '</span>' : ''}
-        <span class="topup-time">${t.date}</span>
-        ${t.note ? '<span class="topup-meta" style="color:#bcc3cd;">' + esc(t.note) + '</span>' : ''}
-        <button class="btn-remove" onclick="deleteTopup(${t.id})" title="删除">✕</button>
+      <div id="topup-${t.id}">
+        <div class="topup-record">
+          <span class="person-tag ${getPersonColor(handler)}">${esc(handler)}</span>
+          <span class="topup-meta" style="flex-shrink:0;">给 <strong style="color:#1a1a2e;">${esc(user)}</strong> 补款</span>
+          ${amountStr ? '<span class="topup-amount">' + amountStr + '</span>' : ''}
+          <span class="topup-time">${t.date}</span>
+          ${t.note ? '<span class="topup-meta" style="color:#bcc3cd;">' + esc(t.note) + '</span>' : ''}
+          <button class="btn-edit" onclick="startEditTopup(${t.id})" title="编辑">✎</button>
+          <button class="btn-remove" onclick="deleteTopup(${t.id})" title="删除">✕</button>
+        </div>
+        <div class="edit-form" id="edit-${t.id}" style="display:none;">
+          <div class="field"><label>用户名</label><input type="text" id="eu-${t.id}" value="${esc(user)}" /></div>
+          <div class="field"><label>经手人</label><input type="text" id="eh-${t.id}" value="${esc(handler)}" /></div>
+          <div class="field"><label>金额</label><input type="number" step="0.01" id="ea-${t.id}" value="${t.amount || ''}" /></div>
+          <div class="field"><label>日期</label><input type="date" id="ed-${t.id}" value="${t.date}" /></div>
+          <div class="field"><label>备注</label><input type="text" id="en-${t.id}" value="${esc(t.note || '')}" /></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-primary" onclick="saveEditTopup(${t.id})">保存</button>
+            <button class="btn-secondary" onclick="cancelEditTopup(${t.id})">取消</button>
+          </div>
+        </div>
       </div>`;
     }).join('');
+  }
+
+  function startEditTopup(id) {
+    document.getElementById('edit-' + id).style.display = 'grid';
+  }
+  function cancelEditTopup(id) {
+    document.getElementById('edit-' + id).style.display = 'none';
+  }
+  async function saveEditTopup(id) {
+    const user = document.getElementById('eu-' + id).value.trim();
+    const handler = document.getElementById('eh-' + id).value.trim();
+    const amount = document.getElementById('ea-' + id).value;
+    const date = document.getElementById('ed-' + id).value;
+    const note = document.getElementById('en-' + id).value.trim();
+    if (!user || !handler || !date) { alert('用户名、经手人、日期不能为空'); return; }
+    const idx = db.topups.findIndex(t => t.id === id);
+    if (idx < 0) return;
+    db.topups[idx].user = user;
+    db.topups[idx].handler = handler;
+    db.topups[idx].amount = amount ? parseFloat(amount) : 0;
+    db.topups[idx].date = date;
+    db.topups[idx].note = note;
+    await saveData();
+    syncFromDb();
+    renderTopups();
   }
 
   // ---- 历史记录 ----
