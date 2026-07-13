@@ -377,10 +377,21 @@
     <div class="member-stats" id="memberStats"></div>
 
     <div class="card" style="margin-bottom:20px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1.2fr auto;gap:12px;align-items:end;">
+      <div style="display:grid;grid-template-columns:1fr 0.6fr 1fr 1fr 1fr auto;gap:12px;align-items:end;">
         <div class="field">
           <label>用户名</label>
           <input type="text" id="memberName" placeholder="用户名" />
+        </div>
+        <div class="field">
+          <label>酒馆</label>
+          <select id="memberTavern">
+            <option value="1">1号</option>
+            <option value="2">2号</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>创建日期</label>
+          <input type="date" id="memberJoinDate" />
         </div>
         <div class="field">
           <label>到期日期</label>
@@ -510,6 +521,8 @@
   document.getElementById('monthPicker').value =
     now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
   document.getElementById('topupDate').value =
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  document.getElementById('memberJoinDate').value =
     now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
   const d30 = new Date(now.getTime() + 30 * 86400000);
   document.getElementById('memberExpiry').value =
@@ -857,11 +870,16 @@
   // ---- 会员管理 ----
   async function addMember() {
     const name = document.getElementById('memberName').value.trim();
+    const tavern = document.getElementById('memberTavern').value;
+    const joinDate = document.getElementById('memberJoinDate').value;
     const expiry = document.getElementById('memberExpiry').value;
     const note = document.getElementById('memberNote').value.trim();
     if (!name) { alert('请填写用户名'); return; }
     if (!expiry) { alert('请选择到期日期'); return; }
-    db.members.push({ id: Date.now(), name: name, expiry: expiry, note: note || '' });
+    db.members.push({
+      id: Date.now(), name: name, tavern: parseInt(tavern),
+      joinDate: joinDate || '', expiry: expiry, note: note || ''
+    });
     db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
     await saveData();
     document.getElementById('memberName').value = '';
@@ -949,10 +967,16 @@
       const disBtn = m.disabled
         ? `<button class="btn-disable is-disabled" onclick="toggleDisable(${m.id})">已禁用</button>`
         : `<button class="btn-disable" onclick="toggleDisable(${m.id})">标记禁用</button>`;
-      const noteHtml = m.note ? `<span style="font-size:12px;color:#bcc3cd;flex:1;min-width:60px;">${esc(m.note)}</span>` : '';
+      const noteHtml = m.note ? `<span style="font-size:12px;color:#bcc3cd;min-width:40px;">${esc(m.note)}</span>` : '';
+      const tavernTag = m.tavern === 2
+        ? '<span style="font-size:11px;background:#fff3e6;color:#e67e22;padding:2px 6px;border-radius:4px;font-weight:600;">2号</span>'
+        : '<span style="font-size:11px;background:#e8f4fd;color:#2b7de9;padding:2px 6px;border-radius:4px;font-weight:600;">1号</span>';
+      const joinHtml = m.joinDate ? `<span style="font-size:12px;color:#bcc3cd;">创建:${m.joinDate}</span>` : '';
       return `
       <div class="member-card ${cardClass}">
+        ${tavernTag}
         <span class="member-name">${esc(m.name)}</span>
+        ${joinHtml}
         <span class="member-date">到期：${m.expiry}</span>
         ${noteHtml}
         <span class="member-status ${statusClass}">${statusText}</span>
@@ -969,12 +993,18 @@
     if (!m) return;
     const newName = prompt('用户名', m.name);
     if (newName === null) return;
+    const newTavern = prompt('酒馆号（1 或 2）', m.tavern || 1);
+    if (newTavern === null) return;
+    const newJoin = prompt('创建日期（格式：YYYY-MM-DD，可留空）', m.joinDate || '');
+    if (newJoin === null) return;
     const newDate = prompt('到期日期（格式：YYYY-MM-DD）', m.expiry);
     if (newDate === null) return;
     const newNote = prompt('备注（可留空）', m.note || '');
     if (newNote === null) return;
-    if (!newName.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) { alert('格式不对'); return; }
+    if (!newName.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) { alert('日期格式不对'); return; }
     m.name = newName.trim();
+    m.tavern = parseInt(newTavern) || 1;
+    m.joinDate = newJoin.trim();
     m.expiry = newDate;
     m.note = newNote.trim();
     db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
@@ -999,66 +1029,74 @@
 
   // ---- 初始化 ----
   const INIT_MEMBERS = [
-    {name:'实二',expiry:'2026-07-16'},
-    {name:'斜光到晓',expiry:'2026-08-03'},
-    {name:'奶油拌云朵',expiry:'2026-07-25'},
-    {name:'l',expiry:'2026-06-01',disabled:true},
-    {name:'r',expiry:'2026-05-04',disabled:true},
-    {name:'link',expiry:'2026-06-20',disabled:true},
-    {name:'桥姬',expiry:'2026-04-12',disabled:true},
-    {name:'北极冰鲜',expiry:'2026-08-04'},
-    {name:'爆炒午餐肉',expiry:'2026-02-12',disabled:true},
-    {name:'爪/清竹',expiry:'2026-02-17',disabled:true},
-    {name:'江南情圣',expiry:'2026-05-21',disabled:true},
-    {name:'tanmitsu',expiry:'2026-07-23',note:'发货内容注错了，以这个为准'},
-    {name:'仿生水豚',expiry:'2026-07-07'},
-    {name:'妳生',expiry:'2026-07-18',note:'都是在一号酒馆里，弥生在群里叫'},
-    {name:'饿空学',expiry:'2026-05-04',disabled:true},
-    {name:'爆炸豆子魔法使',expiry:'2026-04-01',disabled:true},
-    {name:'喝彩',expiry:'2026-03-02',disabled:true},
-    {name:'沉睡的土狗二',expiry:'2026-09-14'},
-    {name:'晚风',expiry:'2026-09-10'},
-    {name:'乙之',expiry:'2026-03-12',disabled:true},
-    {name:'南烛',expiry:'2026-07-04'},
-    {name:'牛牛姐',expiry:'2026-07-25'},
-    {name:'泪痕',expiry:'2026-06-22',disabled:true},
-    {name:'Z',expiry:'2026-07-20'},
-    {name:'小橙',expiry:'2026-07-31'},
-    {name:'弥生',expiry:'2026-03-27',disabled:true,note:'发货内容不准，下单时间是2月27号'},
-    {name:'谁能有我菜',expiry:'2026-07-16'},
-    {name:'良芜萌',expiry:'2026-08-04',note:'发货内容备注错了，以这个为准'},
-    {name:'米豆荔',expiry:'2026-04-01',disabled:true},
-    {name:'阴暗的飘过',expiry:'2026-09-21'},
-    {name:'汗说你就不知道这事',expiry:'2026-06-09',disabled:true},
-    {name:'Eve',expiry:'2026-09-01'},
-    {name:'疏影',expiry:'2026-06-02',disabled:true},
-    {name:'带善人',expiry:'2026-05-02',disabled:true},
-    {name:'辞涯',expiry:'2026-05-05',disabled:true},
-    {name:'一番星',expiry:'2026-07-15'},
-    {name:'卷卷面包',expiry:'2026-06-15',disabled:true},
-    {name:'芒果冰',expiry:'2026-08-17'},
-    {name:'布偶',expiry:'2026-08-01'},
-    {name:'raven',expiry:'2026-07-22'},
-    {name:'咸鱼一条',expiry:'2026-07-27'},
-    {name:'仙女下凡',expiry:'2026-08-06'},
-    {name:'songjh',expiry:'2026-10-31'},
-    {name:'琦',expiry:'2026-08-05'},
-    {name:'一桶章',expiry:'2026-07-16'},
-    {name:'双倍草莓西多士',expiry:'2026-07-07'},
-    {name:'天王星',expiry:'2026-07-16'},
-    {name:'果拿',expiry:'2026-12-08'},
-    {name:'柯总',expiry:'2026-07-31'},
-    {name:'77',expiry:'2026-07-15'},
-    {name:'路女士',expiry:'2026-08-01'},
-    {name:'云朵拉面',expiry:'2026-08-12'},
+    {name:'十颗',tavern:1,joinDate:'2025-11-09',expiry:'2026-05-24',disabled:true},
+    {name:'神秘小狗呼叫',tavern:1,joinDate:'2025-11-23',expiry:'2026-02-23',disabled:true},
+    {name:'同心绮袖',tavern:1,joinDate:'2025-11-22',expiry:'2026-07-22'},
+    {name:'土豆豆豆豆',tavern:1,joinDate:'2025-11-29',expiry:'2026-07-16'},
+    {name:'ckaij',tavern:1,joinDate:'2025-11-25',expiry:'2026-01-25',disabled:true},
+    {name:'实二',tavern:1,joinDate:'2025-11-25',expiry:'2026-07-16'},
+    {name:'斜光到晓',tavern:1,joinDate:'2025-11-25',expiry:'2026-08-03'},
+    {name:'奶油拌云朵',tavern:1,joinDate:'2025-11-27',expiry:'2026-07-25'},
+    {name:'l',tavern:2,joinDate:'2026-01-02',expiry:'2026-06-01',disabled:true},
+    {name:'r',tavern:1,joinDate:'2025-12-22',expiry:'2026-05-04',disabled:true},
+    {name:'link',tavern:2,joinDate:'2025-12-15',expiry:'2026-06-20',disabled:true},
+    {name:'桥姬',tavern:1,joinDate:'2025-11-30',expiry:'2026-04-12',disabled:true},
+    {name:'北极冰鲜',tavern:2,joinDate:'2025-12-08',expiry:'2026-08-04'},
+    {name:'爆炒午餐肉',tavern:1,joinDate:'2025-11-22',expiry:'2026-02-12',disabled:true},
+    {name:'爪/清竹',tavern:2,joinDate:'2025-12-16',expiry:'2026-02-17',disabled:true},
+    {name:'江南情圣',tavern:1,joinDate:'2025-12-22',expiry:'2026-05-21',disabled:true},
+    {name:'tanmitsu',tavern:2,joinDate:'2025-12-28',expiry:'2026-07-23',note:'发货内容注错了，以这个为准'},
+    {name:'仿生水豚',tavern:1,joinDate:'2025-12-25',expiry:'2026-07-07'},
+    {name:'妳生',tavern:1,joinDate:'2026-02-26',expiry:'2026-07-18',note:'都是在一号酒馆里，弥生在群里叫'},
+    {name:'饿空学',tavern:2,joinDate:'2025-12-27',expiry:'2026-05-04',disabled:true},
+    {name:'爆炸豆子魔法使',tavern:2,joinDate:'2025-12-30',expiry:'2026-04-01',disabled:true},
+    {name:'喝彩',tavern:2,joinDate:'',expiry:'2026-03-02',disabled:true},
+    {name:'沉睡的土狗二',tavern:1,joinDate:'2026-01-12',expiry:'2026-09-14'},
+    {name:'晚风',tavern:1,joinDate:'2026-01-13',expiry:'2026-09-10'},
+    {name:'乙之',tavern:2,joinDate:'2026-01-09',expiry:'2026-03-12',disabled:true},
+    {name:'南烛',tavern:2,joinDate:'2026-01-11',expiry:'2026-07-04'},
+    {name:'牛牛姐',tavern:1,joinDate:'2026-01-14',expiry:'2026-07-25'},
+    {name:'泪痕',tavern:2,joinDate:'2026-01-24',expiry:'2026-06-22',disabled:true},
+    {name:'Z',tavern:1,joinDate:'2026-01-19',expiry:'2026-07-20'},
+    {name:'小橙',tavern:2,joinDate:'2026-05-10',expiry:'2026-07-31'},
+    {name:'弥生',tavern:1,joinDate:'2026-02-27',expiry:'2026-03-27',disabled:true,note:'发货内容不准，下单时间是2月27号'},
+    {name:'谁能有我菜',tavern:1,joinDate:'2026-01-27',expiry:'2026-07-16'},
+    {name:'良芜萌',tavern:1,joinDate:'2026-02-14',expiry:'2026-08-04',note:'发货内容备注错了，以这个为准'},
+    {name:'米豆荔',tavern:1,joinDate:'2026-01-23',expiry:'2026-04-01',disabled:true},
+    {name:'阴暗的飘过',tavern:1,joinDate:'2026-03-05',expiry:'2026-09-21'},
+    {name:'汗说你就不知道这事',tavern:1,joinDate:'2026-02-24',expiry:'2026-06-09',disabled:true},
+    {name:'Eve',tavern:1,joinDate:'',expiry:'2026-09-01'},
+    {name:'疏影',tavern:1,joinDate:'2026-03-03',expiry:'2026-06-02',disabled:true},
+    {name:'带善人',tavern:1,joinDate:'2026-02-24',expiry:'2026-05-02',disabled:true},
+    {name:'辞涯',tavern:1,joinDate:'2026-03-01',expiry:'2026-05-05',disabled:true},
+    {name:'一番星',tavern:1,joinDate:'2026-03-17',expiry:'2026-07-15'},
+    {name:'卷卷面包',tavern:1,joinDate:'2026-03-07',expiry:'2026-06-15',disabled:true},
+    {name:'芒果冰',tavern:1,joinDate:'2026-03-09',expiry:'2026-08-17'},
+    {name:'布偶',tavern:1,joinDate:'2026-03-06',expiry:'2026-08-01'},
+    {name:'raven',tavern:1,joinDate:'2026-03-22',expiry:'2026-07-22'},
+    {name:'咸鱼一条',tavern:1,joinDate:'2026-02-18',expiry:'2026-07-27'},
+    {name:'仙女下凡',tavern:1,joinDate:'2026-03-06',expiry:'2026-08-06'},
+    {name:'songjh',tavern:1,joinDate:'2026-05-02',expiry:'2026-10-31'},
+    {name:'琦',tavern:1,joinDate:'2026-04-02',expiry:'2026-08-05'},
+    {name:'一桶章',tavern:1,joinDate:'2026-04-02',expiry:'2026-07-16'},
+    {name:'双倍草莓西多士',tavern:1,joinDate:'2026-03-31',expiry:'2026-07-07'},
+    {name:'天王星',tavern:1,joinDate:'2026-04-15',expiry:'2026-07-16'},
+    {name:'果拿',tavern:1,joinDate:'2026-05-08',expiry:'2026-12-08'},
+    {name:'柯总',tavern:1,joinDate:'2026-02-22',expiry:'2026-07-31'},
+    {name:'77',tavern:1,joinDate:'2026-04-13',expiry:'2026-07-15'},
+    {name:'路女士',tavern:1,joinDate:'2026-06-01',expiry:'2026-08-01'},
+    {name:'云朵拉面',tavern:1,joinDate:'2026-06-02',expiry:'2026-08-12'},
   ];
 
   async function initApp() {
     await loadData();
-    if (db.members.length === 0 && INIT_MEMBERS.length > 0) {
+    const needsReimport = db.members.length === 0 ||
+      (db.members.length > 0 && db.members[0].tavern === undefined);
+    if (needsReimport && INIT_MEMBERS.length > 0) {
       let id = Date.now();
       db.members = INIT_MEMBERS.map(m => ({
-        id: id++, name: m.name, expiry: m.expiry,
+        id: id++, name: m.name, tavern: m.tavern || 1,
+        joinDate: m.joinDate || '', expiry: m.expiry,
         disabled: m.disabled || false, note: m.note || ''
       }));
       db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
