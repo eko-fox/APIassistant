@@ -353,7 +353,7 @@
       "tavern": 1,
       "joinDate": "2025-11-08",
       "expiry": "2026-07-11",
-      "disabled": false,
+      "disabled": true,
       "note": ""
     },
     {
