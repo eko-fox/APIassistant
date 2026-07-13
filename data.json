@@ -60,6 +60,24 @@
   ],
   "members": [
     {
+      "id": 1783947804086,
+      "name": "早上载",
+      "tavern": 1,
+      "joinDate": "2025-11-22",
+      "expiry": "2025-01-22",
+      "disabled": true,
+      "note": ""
+    },
+    {
+      "id": 1783947804085,
+      "name": "胡烧",
+      "tavern": 1,
+      "joinDate": "2025-11-13",
+      "expiry": "2026-01-21",
+      "disabled": true,
+      "note": ""
+    },
+    {
       "id": 1783946777739,
       "name": "ckaij",
       "tavern": 1,
@@ -150,6 +168,15 @@
       "note": ""
     },
     {
+      "id": 1783947804081,
+      "name": "ai酱",
+      "tavern": 2,
+      "joinDate": "2026-01-01",
+      "expiry": "2026-04-18",
+      "disabled": true,
+      "note": ""
+    },
+    {
       "id": 1783946777773,
       "name": "带善人",
       "tavern": 1,
@@ -222,6 +249,15 @@
       "note": ""
     },
     {
+      "id": 1783947804084,
+      "name": "鱼梅",
+      "tavern": 1,
+      "joinDate": "2025-11-18",
+      "expiry": "2026-06-08",
+      "disabled": true,
+      "note": ""
+    },
+    {
       "id": 1783946777770,
       "name": "汗说你就不知道这事",
       "tavern": 1,
@@ -258,6 +294,24 @@
       "note": ""
     },
     {
+      "id": 1783947804083,
+      "name": "黑莓脆皮饼",
+      "tavern": 1,
+      "joinDate": "2025-11-18",
+      "expiry": "2026-06-25",
+      "disabled": true,
+      "note": ""
+    },
+    {
+      "id": 1783947804088,
+      "name": "luv-4",
+      "tavern": 1,
+      "joinDate": "2026-01-05",
+      "expiry": "2026-06-29",
+      "disabled": true,
+      "note": ""
+    },
+    {
       "id": 1783946777760,
       "name": "南烛",
       "tavern": 2,
@@ -281,6 +335,15 @@
       "tavern": 1,
       "joinDate": "2026-03-31",
       "expiry": "2026-07-07",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783947804080,
+      "name": "说什么昵称不懂",
+      "tavern": 1,
+      "joinDate": "2025-11-08",
+      "expiry": "2026-07-11",
       "disabled": false,
       "note": ""
     },
@@ -379,6 +442,15 @@
       "name": "raven",
       "tavern": 1,
       "joinDate": "2026-03-22",
+      "expiry": "2026-07-22",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783947804087,
+      "name": "大概是陈",
+      "tavern": 1,
+      "joinDate": "2025-11-06",
       "expiry": "2026-07-22",
       "disabled": false,
       "note": ""
@@ -501,10 +573,28 @@
       "note": ""
     },
     {
+      "id": 1783947804082,
+      "name": "哈哈嘿",
+      "tavern": 1,
+      "joinDate": "2025-11-18",
+      "expiry": "2026-08-07",
+      "disabled": false,
+      "note": "一号爪子？存疑"
+    },
+    {
       "id": 1783946777791,
       "name": "云朵拉面",
       "tavern": 1,
       "joinDate": "2026-06-02",
+      "expiry": "2026-08-12",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783947804079,
+      "name": "世界喜欢我",
+      "tavern": 1,
+      "joinDate": "2025-11-13",
       "expiry": "2026-08-12",
       "disabled": false,
       "note": ""
