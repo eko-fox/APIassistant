@@ -163,6 +163,46 @@
   .ts-value { font-size: 20px; font-weight: 700; color: #1a1a2e; }
   .ts-value.green { color: #22c55e; }
   .loading { text-align: center; padding: 20px; color: #8e99a4; font-size: 14px; }
+  .member-card {
+    display: flex; align-items: center; gap: 14px; padding: 14px 20px;
+    background: #fff; border: 1px solid #e8ecf1; border-radius: 12px;
+    margin-bottom: 8px; transition: border-color 0.2s;
+  }
+  .member-card.expired { border-color: #fca5a5; background: #fff5f5; }
+  .member-card.soon { border-color: #fcd34d; background: #fffbeb; }
+  .member-name { font-size: 15px; font-weight: 600; color: #1a1a2e; min-width: 80px; }
+  .member-date { font-size: 14px; color: #6b7685; flex: 1; }
+  .member-status {
+    font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 6px; flex-shrink: 0;
+  }
+  .member-status.active { background: #e6faf0; color: #16a34a; }
+  .member-status.expired { background: #fef2f2; color: #e74c3c; }
+  .member-status.soon { background: #fff3e6; color: #e67e22; }
+  .member-status.disabled { background: #f0f2f5; color: #8e99a4; }
+  .member-card.disabled { opacity: 0.6; background: #f8f9fb; }
+  .btn-disable {
+    background: none; border: 1px solid #d5dae1; color: #6b7685; cursor: pointer;
+    font-size: 12px; padding: 4px 10px; border-radius: 6px; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-disable:hover { background: #f0f2f5; }
+  .btn-disable.is-disabled { border-color: #e74c3c; color: #e74c3c; }
+  .btn-renew {
+    background: #7c5cfc; color: #fff; border: none; border-radius: 8px;
+    padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s; white-space: nowrap;
+  }
+  .btn-renew:hover { background: #6344e0; }
+  .member-stats {
+    display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .stat-chip {
+    padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  }
+  .stat-chip.total { background: #f0f2f5; color: #1a1a2e; }
+  .stat-chip.ok { background: #e6faf0; color: #16a34a; }
+  .stat-chip.warn { background: #fff3e6; color: #e67e22; }
+  .stat-chip.bad { background: #fef2f2; color: #e74c3c; }
   .token-setup {
     background: #fff; border: 2px solid #7c5cfc; border-radius: 14px;
     padding: 24px; margin: 20px auto; max-width: 960px; text-align: center;
@@ -202,6 +242,7 @@
     <button class="nav-tab" onclick="switchTab('config')">模型配置 <span class="nav-badge purple" id="configCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('history')">历史记录</button>
     <button class="nav-tab" onclick="switchTab('topup')">补回空 <span class="nav-badge orange" id="topupCount">0</span></button>
+    <button class="nav-tab" onclick="switchTab('members')">会员管理 <span class="nav-badge purple" id="memberCount">0</span></button>
   </div>
 </nav>
 
@@ -329,6 +370,37 @@
     </div>
   </div>
 
+  <div class="panel" id="panel-members">
+    <div class="page-title">会员管理</div>
+    <div class="page-desc">记录月租用户的到期时间，到期标红提醒，一键续期 30 天</div>
+
+    <div class="member-stats" id="memberStats"></div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1.2fr auto;gap:12px;align-items:end;">
+        <div class="field">
+          <label>用户名</label>
+          <input type="text" id="memberName" placeholder="用户名" />
+        </div>
+        <div class="field">
+          <label>到期日期</label>
+          <input type="date" id="memberExpiry" />
+        </div>
+        <div class="field">
+          <label>备注（选填）</label>
+          <input type="text" id="memberNote" placeholder="" />
+        </div>
+        <button class="btn-primary" onclick="addMember()" style="height:38px;">添加</button>
+      </div>
+    </div>
+
+    <div id="memberList"></div>
+
+    <div class="actions">
+      <button class="btn-secondary" onclick="clearMembers()">清空所有会员</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -340,7 +412,7 @@
 
   let ghToken = localStorage.getItem('gh_token') || '';
   let fileSha = '';
-  let db = { models: [], history: [], topups: [] };
+  let db = { models: [], history: [], topups: [], members: [] };
   let saving = false;
 
   function saveToken() {
@@ -364,7 +436,7 @@
     try {
       const res = await fetch(GH_API, { headers: ghHeaders() });
       if (res.status === 404) {
-        db = { models: [], history: [], topups: [] };
+        db = { models: [], history: [], topups: [], members: [] };
         fileSha = '';
         await saveData();
         return;
@@ -386,6 +458,7 @@
       if (!db.models) db.models = [];
       if (!db.history) db.history = [];
       if (!db.topups) db.topups = [];
+      if (!db.members) db.members = [];
     } catch(e) {
       console.error(e);
       alert('加载数据失败: ' + e.message);
@@ -438,9 +511,12 @@
     now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
   document.getElementById('topupDate').value =
     now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  const d30 = new Date(now.getTime() + 30 * 86400000);
+  document.getElementById('memberExpiry').value =
+    d30.getFullYear() + '-' + String(d30.getMonth() + 1).padStart(2, '0') + '-' + String(d30.getDate()).padStart(2, '0');
 
   // ---- Tab ----
-  const TAB_NAMES = ['calc','config','history','topup'];
+  const TAB_NAMES = ['calc','config','history','topup','members'];
   function switchTab(name) {
     document.querySelectorAll('.nav-tab').forEach((t, i) => {
       t.classList.toggle('active', TAB_NAMES[i] === name);
@@ -451,6 +527,7 @@
     if (name === 'config') renderConfig();
     if (name === 'topup') renderTopups();
     if (name === 'history') renderHistory();
+    if (name === 'members') renderMembers();
   }
 
   // ---- 模型配置 ----
@@ -777,25 +854,222 @@
     renderHistory();
   }
 
+  // ---- 会员管理 ----
+  async function addMember() {
+    const name = document.getElementById('memberName').value.trim();
+    const expiry = document.getElementById('memberExpiry').value;
+    const note = document.getElementById('memberNote').value.trim();
+    if (!name) { alert('请填写用户名'); return; }
+    if (!expiry) { alert('请选择到期日期'); return; }
+    db.members.push({ id: Date.now(), name: name, expiry: expiry, note: note || '' });
+    db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+    await saveData();
+    document.getElementById('memberName').value = '';
+    document.getElementById('memberNote').value = '';
+    syncFromDb();
+    renderMembers();
+  }
+
+  async function renewMember(id, days) {
+    const idx = db.members.findIndex(m => m.id === id);
+    if (idx < 0) return;
+    const cur = new Date(db.members[idx].expiry);
+    const today = new Date();
+    const base = cur > today ? cur : today;
+    base.setDate(base.getDate() + days);
+    db.members[idx].expiry = base.toISOString().slice(0, 10);
+    db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
+  async function deleteMember(id) {
+    if (!confirm('确定删除这个会员？')) return;
+    db.members = db.members.filter(m => m.id !== id);
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
+  async function clearMembers() {
+    if (!confirm('确定清空所有会员记录？')) return;
+    db.members = [];
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
+  async function toggleDisable(id) {
+    const idx = db.members.findIndex(m => m.id === id);
+    if (idx < 0) return;
+    db.members[idx].disabled = !db.members[idx].disabled;
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
+  function renderMembers() {
+    const today = new Date().toISOString().slice(0, 10);
+    const soon = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+    let expired = 0, warning = 0, active = 0, disabled = 0;
+
+    memberData.forEach(m => {
+      if (m.disabled) disabled++;
+      else if (m.expiry < today) expired++;
+      else if (m.expiry <= soon) warning++;
+      else active++;
+    });
+
+    document.getElementById('memberCount').textContent = memberData.length;
+    document.getElementById('memberStats').innerHTML =
+      `<span class="stat-chip total">总计 ${memberData.length} 人</span>` +
+      `<span class="stat-chip ok">正常 ${active}</span>` +
+      `<span class="stat-chip warn">即将到期 ${warning}</span>` +
+      `<span class="stat-chip bad">已过期 ${expired}</span>` +
+      `<span class="stat-chip" style="background:#e8ecf1;color:#6b7685;">已禁用 ${disabled}</span>`;
+
+    const listEl = document.getElementById('memberList');
+    if (memberData.length === 0) {
+      listEl.innerHTML = '<div class="empty-hint">还没有添加会员</div>';
+      return;
+    }
+    listEl.innerHTML = memberData.map(m => {
+      let statusClass = 'active', statusText = '正常', cardClass = '';
+      const daysLeft = Math.ceil((new Date(m.expiry) - new Date()) / 86400000);
+      if (m.disabled) {
+        statusClass = 'disabled'; statusText = '已禁用'; cardClass = 'disabled';
+      } else if (m.expiry < today) {
+        statusClass = 'expired'; statusText = '已过期'; cardClass = 'expired';
+      } else if (m.expiry <= soon) {
+        statusClass = 'soon'; statusText = daysLeft + '天后到期'; cardClass = 'soon';
+      } else {
+        statusText = '剩余' + daysLeft + '天';
+      }
+      const disBtn = m.disabled
+        ? `<button class="btn-disable is-disabled" onclick="toggleDisable(${m.id})">已禁用</button>`
+        : `<button class="btn-disable" onclick="toggleDisable(${m.id})">标记禁用</button>`;
+      const noteHtml = m.note ? `<span style="font-size:12px;color:#bcc3cd;flex:1;min-width:60px;">${esc(m.note)}</span>` : '';
+      return `
+      <div class="member-card ${cardClass}">
+        <span class="member-name">${esc(m.name)}</span>
+        <span class="member-date">到期：${m.expiry}</span>
+        ${noteHtml}
+        <span class="member-status ${statusClass}">${statusText}</span>
+        ${!m.disabled ? `<button class="btn-renew" onclick="renewMember(${m.id}, 30)">+30天</button>` : ''}
+        ${disBtn}
+        <button class="btn-edit" onclick="editMember(${m.id})" title="编辑">✎</button>
+        <button class="btn-remove" onclick="deleteMember(${m.id})" title="删除">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  async function editMember(id) {
+    const m = db.members.find(m => m.id === id);
+    if (!m) return;
+    const newName = prompt('用户名', m.name);
+    if (newName === null) return;
+    const newDate = prompt('到期日期（格式：YYYY-MM-DD）', m.expiry);
+    if (newDate === null) return;
+    const newNote = prompt('备注（可留空）', m.note || '');
+    if (newNote === null) return;
+    if (!newName.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) { alert('格式不对'); return; }
+    m.name = newName.trim();
+    m.expiry = newDate;
+    m.note = newNote.trim();
+    db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
   // ---- 同步内存 ----
+  let memberData = [];
+
   function syncFromDb() {
     configModels = (db.models || []).map(m => ({ name: m.name, price: m.price }));
     historyData = db.history || [];
     topupData = db.topups || [];
+    memberData = db.members || [];
   }
 
   // ---- 初始化 ----
+  const INIT_MEMBERS = [
+    {name:'实二',expiry:'2026-07-16'},
+    {name:'斜光到晓',expiry:'2026-08-03'},
+    {name:'奶油拌云朵',expiry:'2026-07-25'},
+    {name:'l',expiry:'2026-06-01',disabled:true},
+    {name:'r',expiry:'2026-05-04',disabled:true},
+    {name:'link',expiry:'2026-06-20',disabled:true},
+    {name:'桥姬',expiry:'2026-04-12',disabled:true},
+    {name:'北极冰鲜',expiry:'2026-08-04'},
+    {name:'爆炒午餐肉',expiry:'2026-02-12',disabled:true},
+    {name:'爪/清竹',expiry:'2026-02-17',disabled:true},
+    {name:'江南情圣',expiry:'2026-05-21',disabled:true},
+    {name:'tanmitsu',expiry:'2026-07-23',note:'发货内容注错了，以这个为准'},
+    {name:'仿生水豚',expiry:'2026-07-07'},
+    {name:'妳生',expiry:'2026-07-18',note:'都是在一号酒馆里，弥生在群里叫'},
+    {name:'饿空学',expiry:'2026-05-04',disabled:true},
+    {name:'爆炸豆子魔法使',expiry:'2026-04-01',disabled:true},
+    {name:'喝彩',expiry:'2026-03-02',disabled:true},
+    {name:'沉睡的土狗二',expiry:'2026-09-14'},
+    {name:'晚风',expiry:'2026-09-10'},
+    {name:'乙之',expiry:'2026-03-12',disabled:true},
+    {name:'南烛',expiry:'2026-07-04'},
+    {name:'牛牛姐',expiry:'2026-07-25'},
+    {name:'泪痕',expiry:'2026-06-22',disabled:true},
+    {name:'Z',expiry:'2026-07-20'},
+    {name:'小橙',expiry:'2026-07-31'},
+    {name:'弥生',expiry:'2026-03-27',disabled:true,note:'发货内容不准，下单时间是2月27号'},
+    {name:'谁能有我菜',expiry:'2026-07-16'},
+    {name:'良芜萌',expiry:'2026-08-04',note:'发货内容备注错了，以这个为准'},
+    {name:'米豆荔',expiry:'2026-04-01',disabled:true},
+    {name:'阴暗的飘过',expiry:'2026-09-21'},
+    {name:'汗说你就不知道这事',expiry:'2026-06-09',disabled:true},
+    {name:'Eve',expiry:'2026-09-01'},
+    {name:'疏影',expiry:'2026-06-02',disabled:true},
+    {name:'带善人',expiry:'2026-05-02',disabled:true},
+    {name:'辞涯',expiry:'2026-05-05',disabled:true},
+    {name:'一番星',expiry:'2026-07-15'},
+    {name:'卷卷面包',expiry:'2026-06-15',disabled:true},
+    {name:'芒果冰',expiry:'2026-08-17'},
+    {name:'布偶',expiry:'2026-08-01'},
+    {name:'raven',expiry:'2026-07-22'},
+    {name:'咸鱼一条',expiry:'2026-07-27'},
+    {name:'仙女下凡',expiry:'2026-08-06'},
+    {name:'songjh',expiry:'2026-10-31'},
+    {name:'琦',expiry:'2026-08-05'},
+    {name:'一桶章',expiry:'2026-07-16'},
+    {name:'双倍草莓西多士',expiry:'2026-07-07'},
+    {name:'天王星',expiry:'2026-07-16'},
+    {name:'果拿',expiry:'2026-12-08'},
+    {name:'柯总',expiry:'2026-07-31'},
+    {name:'77',expiry:'2026-07-15'},
+    {name:'路女士',expiry:'2026-08-01'},
+    {name:'云朵拉面',expiry:'2026-08-12'},
+  ];
+
   async function initApp() {
     await loadData();
+    if (db.members.length === 0 && INIT_MEMBERS.length > 0) {
+      let id = Date.now();
+      db.members = INIT_MEMBERS.map(m => ({
+        id: id++, name: m.name, expiry: m.expiry,
+        disabled: m.disabled || false, note: m.note || ''
+      }));
+      db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+      await saveData();
+    }
     syncFromDb();
     renderCalc();
     renderConfig();
     renderHistory();
     renderTopups();
+    renderMembers();
   }
 
   if (!ghToken) {
