@@ -420,15 +420,6 @@
       "note": ""
     },
     {
-      "id": 1783946777779,
-      "name": "raven",
-      "tavern": 1,
-      "joinDate": "2026-03-22",
-      "expiry": "2026-07-22",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783947804087,
       "name": "大概是陈",
       "tavern": 1,
@@ -605,6 +596,15 @@
       "tavern": 1,
       "joinDate": "2026-03-09",
       "expiry": "2026-08-17",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777779,
+      "name": "raven",
+      "tavern": 1,
+      "joinDate": "2026-03-22",
+      "expiry": "2026-08-21",
       "disabled": false,
       "note": ""
     },
