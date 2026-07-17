@@ -339,15 +339,6 @@
       "note": ""
     },
     {
-      "id": 1783946777789,
-      "name": "77",
-      "tavern": 1,
-      "joinDate": "2026-04-13",
-      "expiry": "2026-07-15",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777738,
       "name": "土豆豆豆豆",
       "tavern": 1,
@@ -578,6 +569,15 @@
       "tavern": 1,
       "joinDate": "2025-11-13",
       "expiry": "2026-08-12",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777789,
+      "name": "77",
+      "tavern": 1,
+      "joinDate": "2026-04-13",
+      "expiry": "2026-08-16",
       "disabled": false,
       "note": ""
     },
