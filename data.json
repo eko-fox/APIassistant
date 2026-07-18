@@ -362,7 +362,7 @@
       "tavern": 1,
       "joinDate": "2026-01-27",
       "expiry": "2026-07-16",
-      "disabled": true,
+      "disabled": false,
       "note": ""
     },
     {
