@@ -339,15 +339,6 @@
       "note": ""
     },
     {
-      "id": 1783946777740,
-      "name": "实二",
-      "tavern": 1,
-      "joinDate": "2025-11-25",
-      "expiry": "2026-07-16",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777786,
       "name": "天王星",
       "tavern": 1,
@@ -587,6 +578,15 @@
       "tavern": 1,
       "joinDate": "2026-03-09",
       "expiry": "2026-08-17",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777740,
+      "name": "实二",
+      "tavern": 1,
+      "joinDate": "2025-11-25",
+      "expiry": "2026-08-18",
       "disabled": false,
       "note": ""
     },
