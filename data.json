@@ -626,15 +626,6 @@
       "note": ""
     },
     {
-      "id": 1783946777741,
-      "name": "斜光到晓",
-      "tavern": 1,
-      "joinDate": "2025-11-25",
-      "expiry": "2026-09-02",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777758,
       "name": "晚风",
       "tavern": 1,
@@ -658,6 +649,15 @@
       "tavern": 1,
       "joinDate": "2026-03-05",
       "expiry": "2026-09-21",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777741,
+      "name": "斜光到晓",
+      "tavern": 1,
+      "joinDate": "2025-11-25",
+      "expiry": "2026-10-02",
       "disabled": false,
       "note": ""
     },
