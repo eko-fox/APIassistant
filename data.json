@@ -456,15 +456,6 @@
       "note": ""
     },
     {
-      "id": 1783946777741,
-      "name": "斜光到晓",
-      "tavern": 1,
-      "joinDate": "2025-11-25",
-      "expiry": "2026-08-03",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777747,
       "name": "北极冰鲜",
       "tavern": 2,
@@ -631,6 +622,15 @@
       "tavern": 1,
       "joinDate": "",
       "expiry": "2026-09-01",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777741,
+      "name": "斜光到晓",
+      "tavern": 1,
+      "joinDate": "2025-11-25",
+      "expiry": "2026-09-02",
       "disabled": false,
       "note": ""
     },
