@@ -375,15 +375,6 @@
       "note": ""
     },
     {
-      "id": 1783947804087,
-      "name": "大概是陈",
-      "tavern": 1,
-      "joinDate": "2025-11-06",
-      "expiry": "2026-07-22",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777751,
       "name": "tanmitsu",
       "tavern": 2,
@@ -613,6 +604,23 @@
       "tavern": 1,
       "joinDate": "2026-03-22",
       "expiry": "2026-08-21",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1784820235829,
+      "name": "星宇",
+      "tavern": 1,
+      "joinDate": "2026-07-12",
+      "expiry": "2026-08-22",
+      "note": ""
+    },
+    {
+      "id": 1783947804087,
+      "name": "大概是陈",
+      "tavern": 1,
+      "joinDate": "2025-11-06",
+      "expiry": "2026-08-24",
       "disabled": false,
       "note": ""
     },
