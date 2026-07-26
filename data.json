@@ -294,15 +294,6 @@
       "note": ""
     },
     {
-      "id": 1783946777762,
-      "name": "泪痕",
-      "tavern": 2,
-      "joinDate": "2026-01-24",
-      "expiry": "2026-06-22",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783947804083,
       "name": "黑莓脆皮饼",
       "tavern": 1,
@@ -613,6 +604,15 @@
       "tavern": 1,
       "joinDate": "2026-07-12",
       "expiry": "2026-08-22",
+      "note": ""
+    },
+    {
+      "id": 1783946777762,
+      "name": "泪痕",
+      "tavern": 2,
+      "joinDate": "2026-01-24",
+      "expiry": "2026-08-24",
+      "disabled": false,
       "note": ""
     },
     {
