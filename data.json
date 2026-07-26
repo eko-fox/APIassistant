@@ -312,15 +312,6 @@
       "note": ""
     },
     {
-      "id": 1783946777760,
-      "name": "南烛",
-      "tavern": 2,
-      "joinDate": "2026-01-11",
-      "expiry": "2026-07-04",
-      "disabled": true,
-      "note": ""
-    },
-    {
       "id": 1783948735776,
       "name": "说什么昵称不懂",
       "tavern": 1,
@@ -389,15 +380,6 @@
       "tavern": 1,
       "joinDate": "2026-01-14",
       "expiry": "2026-07-25",
-      "disabled": false,
-      "note": ""
-    },
-    {
-      "id": 1783946777780,
-      "name": "咸鱼一条",
-      "tavern": 1,
-      "joinDate": "2026-02-18",
-      "expiry": "2026-07-27",
       "disabled": false,
       "note": ""
     },
@@ -621,6 +603,24 @@
       "tavern": 1,
       "joinDate": "2025-11-06",
       "expiry": "2026-08-24",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777760,
+      "name": "南烛",
+      "tavern": 2,
+      "joinDate": "2026-01-11",
+      "expiry": "2026-08-25",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777780,
+      "name": "咸鱼一条",
+      "tavern": 1,
+      "joinDate": "2026-02-18",
+      "expiry": "2026-08-26",
       "disabled": false,
       "note": ""
     },
