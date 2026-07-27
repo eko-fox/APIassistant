@@ -366,15 +366,6 @@
       "note": "发货内容注错了，以这个为准"
     },
     {
-      "id": 1783946777742,
-      "name": "奶油拌云朵",
-      "tavern": 1,
-      "joinDate": "2025-11-27",
-      "expiry": "2026-07-25",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777761,
       "name": "牛牛姐",
       "tavern": 1,
@@ -612,6 +603,15 @@
       "tavern": 2,
       "joinDate": "2026-01-11",
       "expiry": "2026-08-25",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777742,
+      "name": "奶油拌云朵",
+      "tavern": 1,
+      "joinDate": "2025-11-27",
+      "expiry": "2026-08-26",
       "disabled": false,
       "note": ""
     },
