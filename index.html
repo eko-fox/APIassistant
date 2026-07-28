@@ -42,6 +42,15 @@
   .panel.active { display: block; }
   .page-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
   .page-desc { font-size: 14px; color: #8e99a4; margin-bottom: 28px; }
+  .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+  .page-heading .page-title, .page-heading .page-desc { margin-bottom: 0; }
+  .key-tool-link {
+    display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+    padding: 9px 13px; border: 1px solid #ddd6fe; border-radius: 8px;
+    background: #f7f5ff; color: #6d4de6; font-size: 13px; font-weight: 600;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .key-tool-link:hover { background: #eeeaff; border-color: #b8a9ff; color: #5836d3; }
   .card {
     background: #fff; border: 1px solid #e8ecf1; border-radius: 14px;
     padding: 20px 24px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
@@ -224,6 +233,8 @@
     .summary { grid-template-columns: 1fr; padding: 20px; }
     .topup-form { grid-template-columns: 1fr 1fr; }
     .topup-record { flex-wrap: wrap; }
+    .page-heading { align-items: stretch; flex-direction: column; }
+    .key-tool-link { justify-content: center; }
   }
 </style>
 </head>
@@ -316,8 +327,13 @@
   </div>
 
   <div class="panel" id="panel-topup">
-    <div class="page-title">补回空</div>
-    <div class="page-desc">记录用户补款，标注谁经手、防止重复操作</div>
+    <div class="page-heading">
+      <div>
+        <div class="page-title">补回空</div>
+        <div class="page-desc">记录用户补款，标注谁经手、防止重复操作</div>
+      </div>
+      <a class="key-tool-link" href="https://key-tool-wine.vercel.app/" target="_blank" rel="noopener noreferrer" title="在新标签页打开密钥查询工具">⌕ 查询用户密钥 ↗</a>
+    </div>
 
     <div class="card" style="margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
       <span style="font-size:13px;color:#8e99a4;font-weight:500;">额度换算</span>
@@ -375,6 +391,13 @@
     <div class="page-desc">记录月租用户的到期时间，到期标红提醒，一键续期 30 天</div>
 
     <div class="member-stats" id="memberStats"></div>
+
+    <div class="card" style="margin-bottom:12px;padding:14px 20px;">
+      <div class="field" style="max-width:420px;">
+        <label>搜索会员</label>
+        <input type="search" id="memberSearch" placeholder="输入用户名，实时筛选" oninput="renderMembers()" />
+      </div>
+    </div>
 
     <div class="card" style="margin-bottom:20px;">
       <div style="display:grid;grid-template-columns:1fr 0.6fr 1fr 1fr 1fr auto;gap:12px;align-items:end;">
@@ -948,11 +971,20 @@
       `<span class="stat-chip" style="background:#e8ecf1;color:#6b7685;">已禁用 ${disabled}</span>`;
 
     const listEl = document.getElementById('memberList');
+    const searchInput = document.getElementById('memberSearch');
+    const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const visibleMembers = keyword
+      ? memberData.filter(m => String(m.name || '').toLowerCase().includes(keyword))
+      : memberData;
     if (memberData.length === 0) {
       listEl.innerHTML = '<div class="empty-hint">还没有添加会员</div>';
       return;
     }
-    listEl.innerHTML = memberData.map(m => {
+    if (visibleMembers.length === 0) {
+      listEl.innerHTML = '<div class="empty-hint">没有找到匹配的会员</div>';
+      return;
+    }
+    listEl.innerHTML = visibleMembers.map(m => {
       let statusClass = 'active', statusText = '正常', cardClass = '';
       const daysLeft = Math.ceil((new Date(m.expiry) - new Date()) / 86400000);
       if (m.disabled) {
