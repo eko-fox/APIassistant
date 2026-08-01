@@ -420,15 +420,6 @@
       "note": ""
     },
     {
-      "id": 1783946777790,
-      "name": "路女士",
-      "tavern": 1,
-      "joinDate": "2026-06-01",
-      "expiry": "2026-08-01",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777747,
       "name": "北极冰鲜",
       "tavern": 2,
@@ -639,6 +630,15 @@
       "tavern": 1,
       "joinDate": "2026-02-18",
       "expiry": "2026-08-26",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777790,
+      "name": "路女士",
+      "tavern": 1,
+      "joinDate": "2026-06-01",
+      "expiry": "2026-08-31",
       "disabled": false,
       "note": ""
     },
