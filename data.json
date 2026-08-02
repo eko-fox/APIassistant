@@ -40,6 +40,15 @@
   "history": [],
   "topups": [
     {
+      "id": 1785675352143,
+      "user": "Shawty",
+      "handler": "小白",
+      "amount": 0,
+      "note": "",
+      "date": "2026-08-02",
+      "createdAt": "2026/8/2 20:55:52"
+    },
+    {
       "id": 1785220259785,
       "user": "-",
       "handler": "小白",
