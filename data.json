@@ -402,15 +402,6 @@
       "note": ""
     },
     {
-      "id": 1783946777764,
-      "name": "小橙",
-      "tavern": 2,
-      "joinDate": "2026-05-10",
-      "expiry": "2026-07-31",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777788,
       "name": "柯总",
       "tavern": 1,
@@ -630,6 +621,15 @@
       "tavern": 1,
       "joinDate": "2026-02-18",
       "expiry": "2026-08-26",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777764,
+      "name": "小橙",
+      "tavern": 2,
+      "joinDate": "2026-05-10",
+      "expiry": "2026-09-01",
       "disabled": false,
       "note": ""
     },
