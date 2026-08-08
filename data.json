@@ -634,15 +634,6 @@
       "note": ""
     },
     {
-      "id": 1783946777771,
-      "name": "Eve",
-      "tavern": 1,
-      "joinDate": "",
-      "expiry": "2026-09-01",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1785776522396,
       "name": "忧郁贝蒂",
       "tavern": 1,
@@ -665,6 +656,15 @@
       "tavern": 1,
       "joinDate": "2025-11-08",
       "expiry": "2026-09-05",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777771,
+      "name": "Eve",
+      "tavern": 1,
+      "joinDate": "",
+      "expiry": "2026-09-07",
       "disabled": false,
       "note": ""
     },
