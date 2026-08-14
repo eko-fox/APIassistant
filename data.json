@@ -492,15 +492,6 @@
       "note": ""
     },
     {
-      "id": 1783946777791,
-      "name": "云朵拉面",
-      "tavern": 1,
-      "joinDate": "2026-06-02",
-      "expiry": "2026-08-12",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777789,
       "name": "77",
       "tavern": 1,
@@ -692,6 +683,15 @@
       "tavern": 1,
       "joinDate": "2025-11-13",
       "expiry": "2026-09-11",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777791,
+      "name": "云朵拉面",
+      "tavern": 1,
+      "joinDate": "2026-06-02",
+      "expiry": "2026-09-13",
       "disabled": false,
       "note": ""
     },
