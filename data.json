@@ -598,15 +598,6 @@
       "note": ""
     },
     {
-      "id": 1783946777742,
-      "name": "奶油拌云朵",
-      "tavern": 1,
-      "joinDate": "2025-11-27",
-      "expiry": "2026-08-26",
-      "disabled": false,
-      "note": ""
-    },
-    {
       "id": 1783946777780,
       "name": "咸鱼一条",
       "tavern": 1,
@@ -683,6 +674,15 @@
       "tavern": 1,
       "joinDate": "2025-11-13",
       "expiry": "2026-09-11",
+      "disabled": false,
+      "note": ""
+    },
+    {
+      "id": 1783946777742,
+      "name": "奶油拌云朵",
+      "tavern": 1,
+      "joinDate": "2025-11-27",
+      "expiry": "2026-09-13",
       "disabled": false,
       "note": ""
     },
