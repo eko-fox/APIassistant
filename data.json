@@ -40,6 +40,15 @@
   "history": [],
   "topups": [
     {
+      "id": 1787297957056,
+      "user": "Knight",
+      "handler": "小白",
+      "amount": 0,
+      "note": "",
+      "date": "2026-08-21",
+      "createdAt": "2026/8/21 15:39:17"
+    },
+    {
       "id": 1787146238348,
       "user": "失想",
       "handler": "小白",
