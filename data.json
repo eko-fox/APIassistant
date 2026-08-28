@@ -40,6 +40,15 @@
   "history": [],
   "topups": [
     {
+      "id": 1787927691132,
+      "user": "Ghones",
+      "handler": "小白",
+      "amount": 0,
+      "note": "",
+      "date": "2026-08-28",
+      "createdAt": "2026/8/28 22:34:51"
+    },
+    {
       "id": 1787815234889,
       "user": "永恒回响",
       "handler": "小白",
