@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小黑小白 · 运营管理小助手</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f5f7fa; color: #1a1a2e; min-height: 100vh;
+  }
+  .navbar {
+    background: #fff; border-bottom: 1px solid #e8ecf1; padding: 0 32px;
+    display: flex; align-items: center; height: 60px;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-right: 40px; flex-shrink: 0; }
+  .brand-icon {
+    width: 34px; height: 34px; background: linear-gradient(135deg, #1a1a2e, #4a4a6a);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #fff;
+  }
+  .brand-name { font-size: 17px; font-weight: 700; color: #1a1a2e; }
+  .brand-sub { font-size: 12px; color: #8e99a4; font-weight: 400; }
+  .nav-tabs { display: flex; gap: 4px; flex: 1; }
+  .nav-tab {
+    padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 14px;
+    font-weight: 500; border: none; background: transparent; color: #6b7685;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .nav-tab:hover { background: #f0f2f5; color: #1a1a2e; }
+  .nav-tab.active { background: #1a1a2e; color: #fff; }
+  .nav-badge {
+    display: inline-block; border-radius: 10px; padding: 1px 8px;
+    font-size: 11px; margin-left: 6px; font-weight: 600;
+  }
+  .nav-badge.purple { background: #eee8ff; color: #7c5cfc; }
+  .nav-badge.orange { background: #fff3e6; color: #e67e22; }
+  .main { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+  .md-body { line-height: 1.75; font-size: 14px; overflow-x: auto; }
+  .md-body h1 { font-size: 22px; margin: 4px 0 12px; }
+  .md-body h2 { font-size: 18px; margin: 28px 0 10px; padding-top: 16px; border-top: 1px solid #f0f2f5; }
+  .md-body h3 { font-size: 15px; margin: 18px 0 8px; }
+  .md-body table { border-collapse: collapse; margin: 10px 0; }
+  .md-body th, .md-body td { border: 1px solid #e6e8eb; padding: 6px 12px; text-align: left; }
+  .md-body th { background: #f7f8fa; }
+  .md-body code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  .md-body pre { background: #1a1b26; color: #e6e6e6; padding: 12px 14px; border-radius: 8px; overflow-x: auto; }
+  .md-body pre code { background: none; padding: 0; color: inherit; }
+  .md-body blockquote { margin: 8px 0; padding: 6px 14px; border-left: 3px solid #8b5cf6; color: #5b6470; background: #faf8ff; }
+  .md-body ul { padding-left: 22px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .page-desc { font-size: 14px; color: #8e99a4; margin-bottom: 28px; }
+  .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+  .page-heading .page-title, .page-heading .page-desc { margin-bottom: 0; }
+  .key-tool-link {
+    display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+    padding: 9px 13px; border: 1px solid #ddd6fe; border-radius: 8px;
+    background: #f7f5ff; color: #6d4de6; font-size: 13px; font-weight: 600;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .key-tool-link:hover { background: #eeeaff; border-color: #b8a9ff; color: #5836d3; }
+  .card {
+    background: #fff; border: 1px solid #e8ecf1; border-radius: 14px;
+    padding: 20px 24px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .field label { display: block; font-size: 12px; color: #8e99a4; margin-bottom: 5px; font-weight: 500; }
+  .field input, .field select {
+    width: 100%; background: #f5f7fa; border: 1px solid #e0e4ea; border-radius: 8px;
+    color: #1a1a2e; padding: 9px 12px; font-size: 14px; transition: all 0.2s; font-family: inherit;
+  }
+  .field input:focus, .field select:focus {
+    outline: none; border-color: #7c5cfc; background: #fff;
+    box-shadow: 0 0 0 3px rgba(124,92,252,0.1);
+  }
+  .field input::placeholder { color: #bcc3cd; }
+  .month-row { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .month-row label { font-size: 14px; color: #8e99a4; font-weight: 500; }
+  .month-row input {
+    background: #fff; border: 1px solid #e0e4ea; border-radius: 8px;
+    color: #1a1a2e; padding: 8px 12px; font-size: 14px;
+  }
+  .config-card { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 12px; align-items: end; }
+  .calc-card {
+    display: grid; grid-template-columns: 1.5fr 0.8fr 1fr 1fr 1fr; gap: 12px; align-items: end;
+  }
+  .model-name { font-size: 15px; font-weight: 600; color: #1a1a2e; padding: 9px 0; }
+  .unit-price { font-size: 14px; color: #8e99a4; padding: 9px 0; }
+  .computed { font-size: 16px; font-weight: 700; color: #7c5cfc; padding: 9px 0; }
+  .computed.highlight { color: #22c55e; }
+  .header-row {
+    display: grid; grid-template-columns: 1.5fr 0.8fr 1fr 1fr 1fr; gap: 12px;
+    padding: 0 24px 8px; font-size: 13px; color: #8e99a4; font-weight: 500;
+  }
+  .btn-remove {
+    background: none; border: none; color: #e74c3c; cursor: pointer;
+    font-size: 18px; padding: 8px; border-radius: 8px; transition: background 0.2s;
+  }
+  .btn-remove:hover { background: #fef2f2; }
+  .btn-edit {
+    background: none; border: none; color: #7c5cfc; cursor: pointer;
+    font-size: 14px; padding: 8px; border-radius: 8px; transition: background 0.2s;
+  }
+  .btn-edit:hover { background: #f3e8ff; }
+  .edit-form {
+    background: #f9f7ff; border: 1px solid #e0d4fc; border-radius: 10px;
+    padding: 16px; margin: 8px 0; display: grid;
+    grid-template-columns: 1fr 1fr 0.8fr 1fr 1fr auto; gap: 10px; align-items: end;
+  }
+  .edit-form .field input { background: #fff; }
+  .edit-form .btn-primary { height: 38px; font-size: 13px; padding: 8px 16px; }
+  .edit-form .btn-secondary { height: 38px; font-size: 13px; padding: 8px 12px; }
+  .btn-add {
+    background: #fff; border: 2px dashed #d5dae1; border-radius: 14px;
+    color: #7c5cfc; padding: 14px; width: 100%; cursor: pointer;
+    font-size: 14px; font-weight: 600; transition: all 0.2s; margin-bottom: 24px;
+  }
+  .btn-add:hover { border-color: #7c5cfc; background: #f9f7ff; }
+  .btn-primary {
+    background: #1a1a2e; color: white; border: none; border-radius: 10px;
+    padding: 10px 24px; font-size: 14px; cursor: pointer; font-weight: 600; transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #2d2d4a; }
+  .btn-secondary {
+    background: #f0f2f5; color: #4a5568; border: none; border-radius: 10px;
+    padding: 10px 24px; font-size: 14px; cursor: pointer; font-weight: 500;
+  }
+  .btn-secondary:hover { background: #e2e6eb; }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+  .summary {
+    background: #fff; border: 1px solid #e8ecf1; border-radius: 16px;
+    padding: 28px 32px; margin-top: 24px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .summary-item { text-align: center; }
+  .summary-item .s-label { font-size: 13px; color: #8e99a4; margin-bottom: 8px; }
+  .summary-item .s-value { font-size: 28px; font-weight: 800; }
+  .summary-item .s-value.cost { color: #1a1a2e; }
+  .summary-item .s-value.rate { color: #7c5cfc; }
+  .summary-item .s-value.profit { color: #22c55e; }
+  .summary-item .s-unit { font-size: 12px; color: #bcc3cd; margin-top: 4px; }
+  .data-table {
+    width: 100%; border-collapse: collapse; background: #fff;
+    border-radius: 14px; overflow: hidden; border: 1px solid #e8ecf1;
+  }
+  .data-table th {
+    background: #f8f9fb; padding: 13px 16px; text-align: left;
+    font-size: 13px; color: #8e99a4; font-weight: 600;
+  }
+  .data-table td { padding: 13px 16px; font-size: 14px; border-top: 1px solid #f0f2f5; }
+  .data-table a { text-decoration: none; font-weight: 500; }
+  .empty-hint {
+    text-align: center; padding: 48px; color: #bcc3cd; font-size: 14px;
+    background: #fff; border-radius: 14px; border: 1px solid #e8ecf1; margin-bottom: 24px;
+  }
+  .topup-form {
+    display: grid; grid-template-columns: 1fr 1fr 0.8fr 1fr 1fr auto;
+    gap: 12px; align-items: end;
+  }
+  .topup-record {
+    display: flex; align-items: center; gap: 14px; padding: 14px 0;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .topup-record:last-child { border-bottom: none; }
+  .person-tag { padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .person-tag.p0 { background: #e8f4fd; color: #2b7de9; }
+  .person-tag.p1 { background: #f3e8ff; color: #8b5cf6; }
+  .person-tag.p2 { background: #e6faf0; color: #16a34a; }
+  .person-tag.p3 { background: #fff3e6; color: #e67e22; }
+  .topup-amount { font-size: 18px; font-weight: 700; color: #1a1a2e; flex-shrink: 0; }
+  .topup-meta { font-size: 13px; color: #6b7685; flex: 1; }
+  .topup-time { font-size: 12px; color: #bcc3cd; flex-shrink: 0; }
+  .topup-summary {
+    background: #fff; border: 1px solid #e8ecf1; border-radius: 14px;
+    padding: 20px; margin-bottom: 20px; display: flex; gap: 24px;
+    flex-wrap: wrap; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .ts-item { text-align: center; flex: 1; min-width: 120px; }
+  .ts-label { font-size: 12px; color: #8e99a4; margin-bottom: 4px; }
+  .ts-value { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+  .ts-value.green { color: #22c55e; }
+  .loading { text-align: center; padding: 20px; color: #8e99a4; font-size: 14px; }
+  .member-card {
+    display: flex; align-items: center; gap: 14px; padding: 14px 20px;
+    background: #fff; border: 1px solid #e8ecf1; border-radius: 12px;
+    margin-bottom: 8px; transition: border-color 0.2s;
+  }
+  .member-card.expired { border-color: #fca5a5; background: #fff5f5; }
+  .member-card.soon { border-color: #fcd34d; background: #fffbeb; }
+  .member-name { font-size: 15px; font-weight: 600; color: #1a1a2e; min-width: 80px; }
+  .member-date { font-size: 14px; color: #6b7685; flex: 1; }
+  .member-status {
+    font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 6px; flex-shrink: 0;
+  }
+  .member-status.active { background: #e6faf0; color: #16a34a; }
+  .member-status.expired { background: #fef2f2; color: #e74c3c; }
+  .member-status.soon { background: #fff3e6; color: #e67e22; }
+  .member-status.disabled { background: #f0f2f5; color: #8e99a4; }
+  .member-card.disabled { opacity: 0.6; background: #f8f9fb; }
+  .btn-disable {
+    background: none; border: 1px solid #d5dae1; color: #6b7685; cursor: pointer;
+    font-size: 12px; padding: 4px 10px; border-radius: 6px; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-disable:hover { background: #f0f2f5; }
+  .btn-disable.is-disabled { border-color: #e74c3c; color: #e74c3c; }
+  .btn-renew {
+    background: #7c5cfc; color: #fff; border: none; border-radius: 8px;
+    padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s; white-space: nowrap;
+  }
+  .btn-renew:hover { background: #6344e0; }
+  .member-stats {
+    display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .stat-chip {
+    padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  }
+  .stat-chip.total { background: #f0f2f5; color: #1a1a2e; }
+  .stat-chip.ok { background: #e6faf0; color: #16a34a; }
+  .stat-chip.warn { background: #fff3e6; color: #e67e22; }
+  .stat-chip.bad { background: #fef2f2; color: #e74c3c; }
+  .token-setup {
+    background: #fff; border: 2px solid #7c5cfc; border-radius: 14px;
+    padding: 24px; margin: 20px auto; max-width: 960px; text-align: center;
+  }
+  .token-setup input {
+    width: 320px; max-width: 80%; padding: 10px 14px; border: 1px solid #e0e4ea;
+    border-radius: 8px; font-size: 14px; margin: 12px 0;
+  }
+  .token-setup input:focus { outline: none; border-color: #7c5cfc; }
+  @media (max-width: 768px) {
+    .navbar { padding: 0 16px; }
+    .brand-name { font-size: 15px; }
+    .brand { margin-right: 16px; }
+    .nav-tab { padding: 6px 12px; font-size: 13px; }
+    .main { padding: 20px 16px; }
+    .config-card { grid-template-columns: 1fr; }
+    .calc-card { grid-template-columns: 1fr 1fr; }
+    .header-row { display: none; }
+    .summary { grid-template-columns: 1fr; padding: 20px; }
+    .topup-form { grid-template-columns: 1fr 1fr; }
+    .topup-record { flex-wrap: wrap; }
+    .page-heading { align-items: stretch; flex-direction: column; }
+    .key-tool-link { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="brand">
+    <div class="brand-icon">助</div>
+    <div>
+      <div class="brand-name">小黑小白</div>
+      <div class="brand-sub">运营管理小助手</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('calc')">月度结算</button>
+    <button class="nav-tab" onclick="switchTab('config')">模型配置 <span class="nav-badge purple" id="configCount">0</span></button>
+    <button class="nav-tab" onclick="switchTab('history')">历史记录</button>
+    <button class="nav-tab" onclick="switchTab('topup')">补回空 <span class="nav-badge orange" id="topupCount">0</span></button>
+    <button class="nav-tab" onclick="switchTab('members')">会员管理 <span class="nav-badge purple" id="memberCount">0</span></button>
+    <button class="nav-tab" onclick="switchTab('servers')">服务器档案</button>
+  </div>
+</nav>
+
+<div id="tokenSetup" class="token-setup" style="display:none;">
+  <div style="font-size:18px;font-weight:700;margin-bottom:8px;">首次使用：请输入 GitHub Token</div>
+  <div style="font-size:13px;color:#8e99a4;margin-bottom:12px;">Token 仅保存在你的浏览器本地，不会上传到任何地方</div>
+  <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx 或 github_pat_xxxx" />
+  <br>
+  <button class="btn-primary" onclick="saveToken()" style="margin-top:8px;">保存并开始使用</button>
+</div>
+
+<div class="main">
+
+  <div class="panel active" id="panel-calc">
+    <div class="page-title">月度结算</div>
+    <div class="page-desc">输入各模型的调用次数，自动计算进货总额与 20% 提成</div>
+    <div class="month-row">
+      <label>结算月份</label>
+      <input type="month" id="monthPicker" />
+    </div>
+    <div id="calcEmpty" class="empty-hint" style="display:none;">
+      还没有配置模型，请先到「模型配置」添加模型和单价。
+    </div>
+    <div class="header-row" id="calcHeader">
+      <div>模型</div><div>单价</div><div>调用次数</div><div>进货总额</div><div>20% 提成</div>
+    </div>
+    <div id="calcList"></div>
+    <div class="summary">
+      <div class="summary-item">
+        <div class="s-label">进货总额</div>
+        <div class="s-value cost" id="totalCost">¥0.00</div>
+        <div class="s-unit">所有模型合计</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">提成比例</div>
+        <div class="s-value rate">20%</div>
+        <div class="s-unit">固定比例</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">应付提成</div>
+        <div class="s-value profit" id="totalProfit">¥0.00</div>
+        <div class="s-unit">进货总额 × 20%</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" onclick="saveRecord()">保存本月记录</button>
+      <button class="btn-secondary" onclick="exportCSV()">导出 CSV</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-config">
+    <div class="page-title">模型配置</div>
+    <div class="page-desc">预设模型名称和进货单价，保存后每月结算只需输入调用次数</div>
+    <div id="configList"></div>
+    <button class="btn-add" onclick="addConfigModel()">+ 添加模型</button>
+    <button class="btn-primary" onclick="saveConfig()">保存配置</button>
+  </div>
+
+  <div class="panel" id="panel-history">
+    <div class="page-title">历史记录</div>
+    <div class="page-desc">每月结算的存档记录</div>
+    <table class="data-table">
+      <thead>
+        <tr><th>月份</th><th>模型数</th><th>总调用次数</th><th>进货总额</th><th>20% 提成</th><th>操作</th></tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+    <div class="actions">
+      <button class="btn-secondary" onclick="clearHistory()">清空历史</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-topup">
+    <div class="page-heading">
+      <div>
+        <div class="page-title">补回空</div>
+        <div class="page-desc">记录用户补款，标注谁经手、防止重复操作</div>
+      </div>
+      <a class="key-tool-link" href="https://key-tool-wine.vercel.app/" target="_blank" rel="noopener noreferrer" title="在新标签页打开密钥查询工具">⌕ 查询用户密钥 ↗</a>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <span style="font-size:13px;color:#8e99a4;font-weight:500;">额度换算</span>
+      <div class="field" style="flex:1;min-width:140px;">
+        <label>额度数值</label>
+        <input type="number" min="0" id="quotaInput" placeholder="100000" oninput="quotaToYuan()" />
+      </div>
+      <span style="font-size:20px;color:#bcc3cd;">⇄</span>
+      <div class="field" style="flex:1;min-width:140px;">
+        <label>对应金额（元）</label>
+        <input type="number" min="0" step="0.01" id="yuanInput" placeholder="0.20" oninput="yuanToQuota()" />
+      </div>
+      <span style="font-size:12px;color:#bcc3cd;">100000 额度 = ¥0.2</span>
+    </div>
+
+    <div class="topup-summary" id="topupSummary"></div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="topup-form">
+        <div class="field">
+          <label>用户名</label>
+          <input type="text" id="topupUser" placeholder="哪个用户" />
+        </div>
+        <div class="field">
+          <label>经手人</label>
+          <input type="text" id="topupHandler" placeholder="谁操作的" />
+        </div>
+        <div class="field">
+          <label>金额（选填）</label>
+          <input type="number" step="0.01" min="0" id="topupAmount" placeholder="0.00" />
+        </div>
+        <div class="field">
+          <label>日期</label>
+          <input type="date" id="topupDate" />
+        </div>
+        <div class="field">
+          <label>备注（选填）</label>
+          <input type="text" id="topupNote" placeholder="" />
+        </div>
+        <button class="btn-primary" onclick="addTopup()" style="height:38px;">添加</button>
+      </div>
+    </div>
+
+    <div class="card" id="topupListCard">
+      <div id="topupList"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-secondary" onclick="clearTopups()">清空所有记录</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-members">
+    <div class="page-title">会员管理</div>
+    <div class="page-desc">记录月租用户的到期时间，到期标红提醒，一键续期 30 天</div>
+
+    <div class="member-stats" id="memberStats"></div>
+
+    <div class="card" style="margin-bottom:12px;padding:14px 20px;">
+      <div class="field" style="max-width:420px;">
+        <label>搜索会员</label>
+        <input type="search" id="memberSearch" placeholder="输入用户名，实时筛选" oninput="renderMembers()" />
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:1fr 0.6fr 1fr 1fr 1fr auto;gap:12px;align-items:end;">
+        <div class="field">
+          <label>用户名</label>
+          <input type="text" id="memberName" placeholder="用户名" />
+        </div>
+        <div class="field">
+          <label>酒馆</label>
+          <select id="memberTavern">
+            <option value="1">1号</option>
+            <option value="2">2号</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>创建日期</label>
+          <input type="date" id="memberJoinDate" />
+        </div>
+        <div class="field">
+          <label>到期日期</label>
+          <input type="date" id="memberExpiry" />
+        </div>
+        <div class="field">
+          <label>备注（选填）</label>
+          <input type="text" id="memberNote" placeholder="" />
+        </div>
+        <button class="btn-primary" onclick="addMember()" style="height:38px;">添加</button>
+      </div>
+    </div>
+
+    <div id="memberList"></div>
+
+    <div class="actions">
+      <button class="btn-secondary" onclick="clearMembers()">清空所有会员</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-servers">
+    <div class="card md-body" id="serversDoc">
+      <div style="color:#8e99a4;">加载中…</div>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="loadServers(true)">重新加载</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script>
+  // ---- GitHub API 存储 ----
+  const GH_OWNER = 'eko-fox';
+  const GH_REPO = 'APIassistant-data';   // 私密数据仓库
+  const GH_FILE = 'data.json';
+  const GH_API = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_FILE;
+
+  let ghToken = localStorage.getItem('gh_token') || '';
+  let fileSha = '';
+  let db = { models: [], history: [], topups: [], members: [] };
+  let saving = false;
+
+  function saveToken() {
+    const t = document.getElementById('tokenInput').value.trim();
+    if (!t) { alert('请输入 Token'); return; }
+    ghToken = t;
+    localStorage.setItem('gh_token', t);
+    document.getElementById('tokenSetup').style.display = 'none';
+    initApp();
+  }
+
+  function ghHeaders() {
+    return {
+      'Authorization': 'Bearer ' + ghToken,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    };
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch(GH_API, { headers: ghHeaders() });
+      if (res.status === 404) {
+        throw new Error('找不到数据。可能是 Token 没有访问私密仓库 ' + GH_REPO + ' 的权限，或仓库里还没有 data.json');
+      }
+      if (res.status === 401) {
+        alert('Token 无效或已过期，请重新输入');
+        localStorage.removeItem('gh_token');
+        location.reload();
+        return;
+      }
+      if (!res.ok) throw new Error('GitHub API 错误: ' + res.status);
+      const json = await res.json();
+      fileSha = json.sha;
+      const content = atob(json.content.replace(/\n/g, ''));
+      const decoded = new TextDecoder().decode(
+        Uint8Array.from(content, c => c.charCodeAt(0))
+      );
+      db = JSON.parse(decoded);
+      if (!db.models) db.models = [];
+      if (!db.history) db.history = [];
+      if (!db.topups) db.topups = [];
+      if (!db.members) db.members = [];
+    } catch(e) {
+      console.error(e);
+      alert('加载数据失败: ' + e.message);
+    }
+  }
+
+  async function saveData() {
+    if (saving) return;
+    saving = true;
+    try {
+      const jsonStr = JSON.stringify(db, null, 2);
+      const bytes = new TextEncoder().encode(jsonStr);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      const encoded = btoa(binary);
+      const body = {
+        message: '更新数据 ' + new Date().toLocaleString('zh-CN'),
+        content: encoded
+      };
+      if (fileSha) body.sha = fileSha;
+      const res = await fetch(GH_API, {
+        method: 'PUT',
+        headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(res.status + ': ' + err);
+      }
+      const result = await res.json();
+      fileSha = result.content.sha;
+    } catch(e) {
+      console.error(e);
+      alert('保存失败: ' + e.message);
+    } finally {
+      saving = false;
+    }
+  }
+
+  // ---- 数据 ----
+  let configModels = [];
+  let callCounts = {};
+  let historyData = [];
+  let topupData = [];
+  const PERSON_COLORS = ['p0','p1','p2','p3'];
+  let personColorMap = {};
+
+  const now = new Date();
+  document.getElementById('monthPicker').value =
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  document.getElementById('topupDate').value =
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  document.getElementById('memberJoinDate').value =
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  const d30 = new Date(now.getTime() + 30 * 86400000);
+  document.getElementById('memberExpiry').value =
+    d30.getFullYear() + '-' + String(d30.getMonth() + 1).padStart(2, '0') + '-' + String(d30.getDate()).padStart(2, '0');
+
+  // ---- 服务器档案（从私密仓库读取 servers.md）----
+  const GH_SERVERS_API = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/servers.md';
+  let serversLoaded = false;
+  async function loadServers(force) {
+    if (serversLoaded && !force) return;
+    const box = document.getElementById('serversDoc');
+    box.innerHTML = '<div style="color:#8e99a4;">加载中…</div>';
+    try {
+      const res = await fetch(GH_SERVERS_API, { headers: { ...ghHeaders(), 'Accept': 'application/vnd.github.raw+json' }, cache: 'no-store' });
+      if (res.status === 404) { box.innerHTML = '<div style="color:#e5484d;">找不到 servers.md（检查私密仓库里有没有这个文件，以及 Token 权限）</div>'; return; }
+      if (!res.ok) throw new Error('GitHub API 错误: ' + res.status);
+      const text = await res.text();
+      if (window.marked) {
+        box.innerHTML = marked.parse(text);
+      } else {
+        const pre = document.createElement('pre');
+        pre.textContent = text;
+        box.innerHTML = '';
+        box.appendChild(pre);
+      }
+      serversLoaded = true;
+    } catch (e) {
+      console.error(e);
+      box.innerHTML = '<div style="color:#e5484d;">加载失败：' + e.message + '</div>';
+    }
+  }
+
+  // ---- Tab ----
+  const TAB_NAMES = ['calc','config','history','topup','members','servers'];
+  function switchTab(name) {
+    document.querySelectorAll('.nav-tab').forEach((t, i) => {
+      t.classList.toggle('active', TAB_NAMES[i] === name);
+    });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'calc') renderCalc();
+    if (name === 'config') renderConfig();
+    if (name === 'topup') renderTopups();
+    if (name === 'history') renderHistory();
+    if (name === 'members') renderMembers();
+    if (name === 'servers') loadServers(false);
+  }
+
+  // ---- 模型配置 ----
+  function addConfigModel() {
+    configModels.push({ name: '', price: '' });
+    renderConfig();
+    setTimeout(() => {
+      const inputs = document.querySelectorAll('#configList input[data-field="name"]');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }, 50);
+  }
+  function removeConfigModel(idx) { configModels.splice(idx, 1); renderConfig(); }
+  function updateConfigModel(idx, field, value) { configModels[idx][field] = value; }
+
+  async function saveConfig() {
+    configModels = configModels.filter(m => m.name && m.name.trim() !== '');
+    db.models = configModels.map(m => ({ name: m.name.trim(), price: parseFloat(m.price) || 0 }));
+    await saveData();
+    document.getElementById('configCount').textContent = configModels.length;
+    renderConfig();
+    alert('模型配置已保存（共 ' + configModels.length + ' 个模型）');
+  }
+
+  function renderConfig() {
+    document.getElementById('configCount').textContent = configModels.length;
+    const list = document.getElementById('configList');
+    if (configModels.length === 0) {
+      list.innerHTML = '<div class="empty-hint">还没有添加任何模型，点击下方按钮添加。</div>';
+      return;
+    }
+    list.innerHTML = configModels.map((m, i) => `
+      <div class="card config-card">
+        <div class="field">
+          <label>模型 / 供应商名称</label>
+          <input type="text" data-field="name" placeholder="如: GPT-4o / Claude" value="${esc(m.name)}"
+            oninput="updateConfigModel(${i}, 'name', this.value)" />
+        </div>
+        <div class="field">
+          <label>进货单价（元/次）</label>
+          <input type="number" step="0.0001" min="0" placeholder="0.02" value="${m.price}"
+            oninput="updateConfigModel(${i}, 'price', this.value)" />
+        </div>
+        <button class="btn-remove" onclick="removeConfigModel(${i})" title="删除">✕</button>
+      </div>
+    `).join('');
+  }
+
+  // ---- 月度结算 ----
+  function renderCalc() {
+    const list = document.getElementById('calcList');
+    const empty = document.getElementById('calcEmpty');
+    const header = document.getElementById('calcHeader');
+    if (configModels.length === 0) {
+      empty.style.display = 'block'; header.style.display = 'none'; list.innerHTML = ''; return;
+    }
+    empty.style.display = 'none'; header.style.display = '';
+    list.innerHTML = configModels.map((m, i) => {
+      const calls = callCounts[m.name] || '';
+      const c = parseInt(calls) || 0;
+      const price = parseFloat(m.price) || 0;
+      const total = price * c;
+      const profit = total * 0.2;
+      return `
+        <div class="card calc-card">
+          <div class="model-name">${esc(m.name)}</div>
+          <div class="unit-price">¥${price}/次</div>
+          <div class="field">
+            <input type="number" min="0" placeholder="输入调用次数" value="${calls}"
+              oninput="onCallInput('${esc(m.name)}', ${price}, this)" />
+          </div>
+          <div class="computed">¥${total.toFixed(4)}</div>
+          <div class="computed highlight">¥${profit.toFixed(4)}</div>
+        </div>`;
+    }).join('');
+    renderSummary();
+  }
+
+  function onCallInput(name, price, el) {
+    callCounts[name] = el.value;
+    const c = parseInt(el.value) || 0;
+    const total = price * c;
+    const card = el.closest('.calc-card');
+    card.querySelectorAll('.computed')[0].textContent = '¥' + total.toFixed(4);
+    card.querySelectorAll('.computed')[1].textContent = '¥' + (total * 0.2).toFixed(4);
+    renderSummary();
+  }
+
+  function renderSummary() {
+    let totalCost = 0;
+    configModels.forEach(m => {
+      totalCost += (parseFloat(m.price) || 0) * (parseInt(callCounts[m.name]) || 0);
+    });
+    document.getElementById('totalCost').textContent = '¥' + totalCost.toFixed(4);
+    document.getElementById('totalProfit').textContent = '¥' + (totalCost * 0.2).toFixed(4);
+  }
+
+  // ---- 额度换算 ----
+  const QUOTA_RATE = 0.2 / 100000;
+  function quotaToYuan() {
+    const q = parseFloat(document.getElementById('quotaInput').value) || 0;
+    document.getElementById('yuanInput').value = q ? (q * QUOTA_RATE).toFixed(4) : '';
+  }
+  function yuanToQuota() {
+    const y = parseFloat(document.getElementById('yuanInput').value) || 0;
+    document.getElementById('quotaInput').value = y ? Math.round(y / QUOTA_RATE) : '';
+  }
+
+  // ---- 补回空 ----
+  function getPersonColor(name) {
+    if (!personColorMap[name]) {
+      const idx = Object.keys(personColorMap).length % PERSON_COLORS.length;
+      personColorMap[name] = PERSON_COLORS[idx];
+    }
+    return personColorMap[name];
+  }
+
+  async function addTopup() {
+    const user = document.getElementById('topupUser').value.trim();
+    const handler = document.getElementById('topupHandler').value.trim();
+    const amount = document.getElementById('topupAmount').value;
+    const date = document.getElementById('topupDate').value;
+    const note = document.getElementById('topupNote').value.trim();
+
+    if (!user) { alert('请填写用户名'); return; }
+    if (!handler) { alert('请填写经手人'); return; }
+    if (!date) { alert('请选择日期'); return; }
+
+    db.topups.unshift({
+      id: Date.now(),
+      user: user, handler: handler,
+      amount: amount ? parseFloat(amount) : 0,
+      note: note, date: date,
+      createdAt: new Date().toLocaleString('zh-CN')
+    });
+    await saveData();
+
+    document.getElementById('topupUser').value = '';
+    document.getElementById('topupAmount').value = '';
+    document.getElementById('topupNote').value = '';
+    syncFromDb();
+    renderTopups();
+  }
+
+  async function deleteTopup(id) {
+    if (!confirm('确定删除这条记录？')) return;
+    db.topups = db.topups.filter(t => t.id !== id);
+    await saveData();
+    syncFromDb();
+    renderTopups();
+  }
+
+  async function clearTopups() {
+    if (!confirm('确定清空所有补回空记录？')) return;
+    db.topups = [];
+    await saveData();
+    syncFromDb();
+    renderTopups();
+  }
+
+  function renderTopups() {
+    document.getElementById('topupCount').textContent = topupData.length;
+    const byHandler = {};
+    let grandTotal = 0;
+    topupData.forEach(t => {
+      const h = t.handler || '未知';
+      byHandler[h] = (byHandler[h] || 0) + (t.amount || 0);
+      grandTotal += (t.amount || 0);
+    });
+    const summaryEl = document.getElementById('topupSummary');
+    const handlers = Object.keys(byHandler);
+    if (handlers.length === 0) {
+      summaryEl.innerHTML = '<div class="ts-item" style="flex:auto;"><div class="ts-label">暂无记录</div></div>';
+    } else {
+      summaryEl.innerHTML = handlers.map(h => `
+        <div class="ts-item">
+          <div class="ts-label">${esc(h)} 经手</div>
+          <div class="ts-value">¥${byHandler[h].toFixed(2)}</div>
+        </div>
+      `).join('') + `<div class="ts-item"><div class="ts-label">总计</div><div class="ts-value green">¥${grandTotal.toFixed(2)}</div></div>`;
+    }
+    const listEl = document.getElementById('topupList');
+    if (topupData.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center;padding:32px;color:#bcc3cd;">还没有记录</div>';
+      return;
+    }
+    listEl.innerHTML = topupData.map(t => {
+      const handler = t.handler || '未知';
+      const user = t.user || '未知';
+      const amountStr = t.amount > 0 ? '¥' + t.amount.toFixed(2) : '';
+      return `
+      <div id="topup-${t.id}">
+        <div class="topup-record">
+          <span class="person-tag ${getPersonColor(handler)}">${esc(handler)}</span>
+          <span class="topup-meta" style="flex-shrink:0;">给 <strong style="color:#1a1a2e;">${esc(user)}</strong> 补款</span>
+          ${amountStr ? '<span class="topup-amount">' + amountStr + '</span>' : ''}
+          <span class="topup-time">${t.date}</span>
+          ${t.note ? '<span class="topup-meta" style="color:#bcc3cd;">' + esc(t.note) + '</span>' : ''}
+          <button class="btn-edit" onclick="startEditTopup(${t.id})" title="编辑">✎</button>
+          <button class="btn-remove" onclick="deleteTopup(${t.id})" title="删除">✕</button>
+        </div>
+        <div class="edit-form" id="edit-${t.id}" style="display:none;">
+          <div class="field"><label>用户名</label><input type="text" id="eu-${t.id}" value="${esc(user)}" /></div>
+          <div class="field"><label>经手人</label><input type="text" id="eh-${t.id}" value="${esc(handler)}" /></div>
+          <div class="field"><label>金额</label><input type="number" step="0.01" id="ea-${t.id}" value="${t.amount || ''}" /></div>
+          <div class="field"><label>日期</label><input type="date" id="ed-${t.id}" value="${t.date}" /></div>
+          <div class="field"><label>备注</label><input type="text" id="en-${t.id}" value="${esc(t.note || '')}" /></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-primary" onclick="saveEditTopup(${t.id})">保存</button>
+            <button class="btn-secondary" onclick="cancelEditTopup(${t.id})">取消</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function startEditTopup(id) {
+    document.getElementById('edit-' + id).style.display = 'grid';
+  }
+  function cancelEditTopup(id) {
+    document.getElementById('edit-' + id).style.display = 'none';
+  }
+  async function saveEditTopup(id) {
+    const user = document.getElementById('eu-' + id).value.trim();
+    const handler = document.getElementById('eh-' + id).value.trim();
+    const amount = document.getElementById('ea-' + id).value;
+    const date = document.getElementById('ed-' + id).value;
+    const note = document.getElementById('en-' + id).value.trim();
+    if (!user || !handler || !date) { alert('用户名、经手人、日期不能为空'); return; }
+    const idx = db.topups.findIndex(t => t.id === id);
+    if (idx < 0) return;
+    db.topups[idx].user = user;
+    db.topups[idx].handler = handler;
+    db.topups[idx].amount = amount ? parseFloat(amount) : 0;
+    db.topups[idx].date = date;
+    db.topups[idx].note = note;
+    await saveData();
+    syncFromDb();
+    renderTopups();
+  }
+
+  // ---- 历史记录 ----
+  async function saveRecord() {
+    const month = document.getElementById('monthPicker').value;
+    if (!month) { alert('请选择月份'); return; }
+    if (configModels.length === 0) { alert('请先配置模型'); return; }
+    let totalCalls = 0, totalCost = 0;
+    const details = configModels.map(m => {
+      const c = parseInt(callCounts[m.name]) || 0;
+      const p = parseFloat(m.price) || 0;
+      totalCalls += c; totalCost += p * c;
+      return { name: m.name, price: m.price, calls: c };
+    });
+    const existing = db.history.findIndex(h => h.month === month);
+    const record = {
+      month: month, model_count: configModels.length,
+      total_calls: totalCalls, total_cost: totalCost,
+      profit: totalCost * 0.2, details: details
+    };
+    if (existing >= 0) db.history[existing] = record;
+    else db.history.unshift(record);
+
+    await saveData();
+    syncFromDb();
+    alert('已保存 ' + month + ' 的记录');
+  }
+
+  function loadRecord(month) {
+    const rec = historyData.find(h => h.month === month);
+    if (!rec) return;
+    document.getElementById('monthPicker').value = month;
+    callCounts = {};
+    if (rec.details) {
+      rec.details.forEach(d => { callCounts[d.name] = d.calls; });
+    }
+    switchTab('calc');
+  }
+
+  async function deleteRecord(month) {
+    if (!confirm('确定删除 ' + month + ' 的记录？')) return;
+    db.history = db.history.filter(h => h.month !== month);
+    await saveData();
+    syncFromDb();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const tbody = document.getElementById('historyBody');
+    if (historyData.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#bcc3cd;padding:32px;">暂无历史记录</td></tr>';
+      return;
+    }
+    tbody.innerHTML = historyData.map(h => `
+      <tr>
+        <td>${h.month}</td><td>${h.model_count}</td>
+        <td>${(h.total_calls||0).toLocaleString()}</td>
+        <td>¥${parseFloat(h.total_cost||0).toFixed(4)}</td>
+        <td style="color:#22c55e;font-weight:600;">¥${parseFloat(h.profit||0).toFixed(4)}</td>
+        <td>
+          <a href="#" onclick="loadRecord('${h.month}');return false;" style="color:#7c5cfc;margin-right:12px;">加载</a>
+          <a href="#" onclick="deleteRecord('${h.month}');return false;" style="color:#e74c3c;">删除</a>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function exportCSV() {
+    if (historyData.length === 0) { alert('暂无记录可导出'); return; }
+    let csv = '﻿月份,模型数,总调用次数,进货总额,20%提成\n';
+    historyData.forEach(h => {
+      csv += `${h.month},${h.model_count},${h.total_calls},${parseFloat(h.total_cost).toFixed(4)},${parseFloat(h.profit).toFixed(4)}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'api_monthly_settlement.csv';
+    a.click();
+  }
+
+  async function clearHistory() {
+    if (!confirm('确定清空所有历史记录？')) return;
+    db.history = [];
+    await saveData();
+    syncFromDb();
+    renderHistory();
+  }
+
+  // ---- 会员管理 ----
+  async function addMember() {
+    const name = document.getElementById('memberName').value.trim();
+    const tavern = document.getElementById('memberTavern').value;
+    const joinDate = document.getElementById('memberJoinDate').value;
+    const expiry = document.getElementById('memberExpiry').value;
+    const note = document.getElementById('memberNote').value.trim();
+    if (!name) { alert('请填写用户名'); return; }
+    if (!expiry) { alert('请选择到期日期'); return; }
+    db.members.push({
+      id: Date.now(), name: name, tavern: parseInt(tavern),
+      joinDate: joinDate || '', expiry: expiry, note: note || ''
+    });
+    db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+    await saveData();
+    document.getElementById('memberName').value = '';
+    document.getElementById('memberNote').value = '';
+    syncFromDb();
+    renderMembers();
+  }
+
+  async function renewMember(id, days) {
+    const idx = db.members.findIndex(m => m.id === id);
+    if (idx < 0) return;
+    const cur = new Date(db.members[idx].expiry);
+    const today = new Date();
+    const base = cur > today ? cur : today;
+    base.setDate(base.getDate() + days);
+    db.members[idx].expiry = base.toISOString().slice(0, 10);
+    db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
+  async function deleteMember(id) {
+    if (!confirm('确定删除这个会员？')) return;
+    db.members = db.members.filter(m => m.id !== id);
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
+  async function clearMembers() {
+    if (!confirm('确定清空所有会员记录？')) return;
+    db.members = [];
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
+  async function toggleDisable(id) {
+    const idx = db.members.findIndex(m => m.id === id);
+    if (idx < 0) return;
+    db.members[idx].disabled = !db.members[idx].disabled;
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
+  function renderMembers() {
+    const today = new Date().toISOString().slice(0, 10);
+    const soon = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+    let expired = 0, warning = 0, active = 0, disabled = 0;
+
+    memberData.forEach(m => {
+      if (m.disabled) disabled++;
+      else if (m.expiry < today) expired++;
+      else if (m.expiry <= soon) warning++;
+      else active++;
+    });
+
+    document.getElementById('memberCount').textContent = memberData.length;
+    document.getElementById('memberStats').innerHTML =
+      `<span class="stat-chip total">总计 ${memberData.length} 人</span>` +
+      `<span class="stat-chip ok">正常 ${active}</span>` +
+      `<span class="stat-chip warn">即将到期 ${warning}</span>` +
+      `<span class="stat-chip bad">已过期 ${expired}</span>` +
+      `<span class="stat-chip" style="background:#e8ecf1;color:#6b7685;">已禁用 ${disabled}</span>`;
+
+    const listEl = document.getElementById('memberList');
+    const searchInput = document.getElementById('memberSearch');
+    const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const visibleMembers = keyword
+      ? memberData.filter(m => String(m.name || '').toLowerCase().includes(keyword))
+      : memberData;
+    if (memberData.length === 0) {
+      listEl.innerHTML = '<div class="empty-hint">还没有添加会员</div>';
+      return;
+    }
+    if (visibleMembers.length === 0) {
+      listEl.innerHTML = '<div class="empty-hint">没有找到匹配的会员</div>';
+      return;
+    }
+    listEl.innerHTML = visibleMembers.map(m => {
+      let statusClass = 'active', statusText = '正常', cardClass = '';
+      const daysLeft = Math.ceil((new Date(m.expiry) - new Date()) / 86400000);
+      if (m.disabled) {
+        statusClass = 'disabled'; statusText = '已禁用'; cardClass = 'disabled';
+      } else if (m.expiry < today) {
+        statusClass = 'expired'; statusText = '已过期'; cardClass = 'expired';
+      } else if (m.expiry <= soon) {
+        statusClass = 'soon'; statusText = daysLeft + '天后到期'; cardClass = 'soon';
+      } else {
+        statusText = '剩余' + daysLeft + '天';
+      }
+      const disBtn = m.disabled
+        ? `<button class="btn-disable is-disabled" onclick="toggleDisable(${m.id})">已禁用</button>`
+        : `<button class="btn-disable" onclick="toggleDisable(${m.id})">标记禁用</button>`;
+      const noteHtml = m.note ? `<span style="font-size:12px;color:#bcc3cd;min-width:40px;">${esc(m.note)}</span>` : '';
+      const tavernTag = m.tavern === 2
+        ? '<span style="font-size:11px;background:#fff3e6;color:#e67e22;padding:2px 6px;border-radius:4px;font-weight:600;">2号</span>'
+        : '<span style="font-size:11px;background:#e8f4fd;color:#2b7de9;padding:2px 6px;border-radius:4px;font-weight:600;">1号</span>';
+      const joinHtml = m.joinDate ? `<span style="font-size:12px;color:#bcc3cd;">创建:${m.joinDate}</span>` : '';
+      return `
+      <div class="member-card ${cardClass}">
+        ${tavernTag}
+        <span class="member-name">${esc(m.name)}</span>
+        ${joinHtml}
+        <span class="member-date">到期：${m.expiry}</span>
+        ${noteHtml}
+        <span class="member-status ${statusClass}">${statusText}</span>
+        ${!m.disabled ? `<button class="btn-renew" onclick="renewMember(${m.id}, 30)">+30天</button>` : ''}
+        ${disBtn}
+        <button class="btn-edit" onclick="editMember(${m.id})" title="编辑">✎</button>
+        <button class="btn-remove" onclick="deleteMember(${m.id})" title="删除">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  async function editMember(id) {
+    const m = db.members.find(m => m.id === id);
+    if (!m) return;
+    const newName = prompt('用户名', m.name);
+    if (newName === null) return;
+    const newTavern = prompt('酒馆号（1 或 2）', m.tavern || 1);
+    if (newTavern === null) return;
+    const newJoin = prompt('创建日期（格式：YYYY-MM-DD，可留空）', m.joinDate || '');
+    if (newJoin === null) return;
+    const newDate = prompt('到期日期（格式：YYYY-MM-DD）', m.expiry);
+    if (newDate === null) return;
+    const newNote = prompt('备注（可留空）', m.note || '');
+    if (newNote === null) return;
+    if (!newName.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) { alert('日期格式不对'); return; }
+    m.name = newName.trim();
+    m.tavern = parseInt(newTavern) || 1;
+    m.joinDate = newJoin.trim();
+    m.expiry = newDate;
+    m.note = newNote.trim();
+    db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+    await saveData();
+    syncFromDb();
+    renderMembers();
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // ---- 同步内存 ----
+  let memberData = [];
+
+  function syncFromDb() {
+    configModels = (db.models || []).map(m => ({ name: m.name, price: m.price }));
+    historyData = db.history || [];
+    topupData = db.topups || [];
+    memberData = db.members || [];
+  }
+
+  // ---- 初始化 ----
+  const INIT_MEMBERS = [];   // 会员数据只存在私密仓库的 data.json 里，不再写在公开页面中
+
+  async function initApp() {
+    await loadData();
+    const needsReimport = db.members.length === 0 ||
+      (db.members.length > 0 && db.members[0].tavern === undefined);
+    if (needsReimport && INIT_MEMBERS.length > 0) {
+      let id = Date.now();
+      db.members = INIT_MEMBERS.map(m => ({
+        id: id++, name: m.name, tavern: m.tavern || 1,
+        joinDate: m.joinDate || '', expiry: m.expiry,
+        disabled: m.disabled || false, note: m.note || ''
+      }));
+      db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+      await saveData();
+    } else if (db.members.length > 0 && INIT_MEMBERS.length > 0) {
+      // 自动补入缺失成员
+      const existNames = new Set(db.members.map(m => m.name));
+      const missing = INIT_MEMBERS.filter(m => !existNames.has(m.name));
+      if (missing.length > 0) {
+        let id = Date.now();
+        missing.forEach(m => {
+          db.members.push({
+            id: id++, name: m.name, tavern: m.tavern || 1,
+            joinDate: m.joinDate || '', expiry: m.expiry,
+            disabled: m.disabled || false, note: m.note || ''
+          });
+        });
+        db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+        await saveData();
+      }
+    }
+    syncFromDb();
+    renderCalc();
+    renderConfig();
+    renderHistory();
+    renderTopups();
+    renderMembers();
+  }
+
+  if (!ghToken) {
+    document.getElementById('tokenSetup').style.display = 'block';
+  } else {
+    initApp();
+  }
+</script>
+</body>
+</html>
