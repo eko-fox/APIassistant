@@ -117,6 +117,45 @@
   .sv-toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #1f2937; color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 99; }
   .sv-toast.on { opacity: 1; }
   @media (max-width: 640px) { #serversDoc { padding: 18px 14px; } .md-body .sv-arrow { width: 100%; padding: 4px 0; transform: rotate(90deg); } .md-body .sv-arrow small { display: none; } }
+  /* ===== 邀请总览 ===== */
+  .inv-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .inv-card { background: #fff; border: 1px solid #e8ecf1; border-radius: 14px; padding: 14px 18px; }
+  .inv-card b { display: block; font-size: 24px; font-weight: 800; color: #1a1a2e; }
+  .inv-card span { font-size: 12px; color: #8e99a4; }
+  .inv-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .inv-bar input { flex: 1; min-width: 180px; background: #fff; border: 1px solid #e0e4ea; border-radius: 8px; padding: 9px 12px; font-size: 14px; font-family: inherit; }
+  .inv-bar input:focus { outline: none; border-color: #7c5cfc; box-shadow: 0 0 0 3px rgba(124,92,252,0.1); }
+  .inv-f { padding: 8px 14px; border: 1px solid #e0e4ea; border-radius: 8px; background: #fff; color: #4a5568; cursor: pointer; font-size: 13px; font-family: inherit; }
+  .inv-f.on { background: #1a1a2e; border-color: #1a1a2e; color: #fff; }
+  .inv-sum { font-size: 12px; color: #8e99a4; margin-bottom: 8px; }
+  .inv-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid #e8ecf1; background: #fff; }
+  .inv-wrap .data-table { border: none; border-radius: 0; min-width: 820px; }
+  .inv-wrap th[data-k] { cursor: pointer; user-select: none; white-space: nowrap; }
+  .inv-wrap td, .inv-wrap th { padding: 10px 12px; }
+  .inv-wrap .n { text-align: right; font-variant-numeric: tabular-nums; }
+  .inv-wrap td.id { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .inv-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap; margin: 1px 2px 1px 0; }
+  .inv-tag.sus { background: #fde8e8; color: #c53030; }
+  .inv-tag.good { background: #e6faf0; color: #16a34a; }
+  .inv-tag.ban { background: #f0f2f5; color: #6b7685; }
+  .inv-tag.tier { background: #fff3e6; color: #e67e22; }
+  .inv-tag.adm { background: #eee8ff; color: #7c5cfc; }
+  .inv-view { display: inline-flex; background: #f0f2f5; border-radius: 10px; padding: 3px; margin-bottom: 14px; }
+  .inv-view button { border: none; background: transparent; padding: 7px 16px; border-radius: 8px; font-size: 13px; color: #6b7685; cursor: pointer; font-family: inherit; font-weight: 500; }
+  .inv-view button.on { background: #fff; color: #1a1a2e; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .rank-row { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-top: 1px solid #f0f2f5; }
+  .rank-row:first-child { border-top: none; }
+  .rank-no { width: 34px; flex-shrink: 0; text-align: center; font-size: 15px; font-weight: 800; color: #bcc3cd; font-variant-numeric: tabular-nums; }
+  .rank-no.m { font-size: 22px; }
+  .rank-main { flex: 1; min-width: 0; }
+  .rank-name { font-size: 14px; font-weight: 600; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-name small { color: #8e99a4; font-weight: 500; margin-left: 6px; }
+  .rank-track { height: 6px; background: #f0f2f5; border-radius: 3px; margin: 6px 0 4px; overflow: hidden; }
+  .rank-fill { height: 100%; background: linear-gradient(90deg, #7c5cfc, #a78bfa); border-radius: 3px; }
+  .rank-sub { font-size: 12px; color: #8e99a4; }
+  .rank-val { flex-shrink: 0; text-align: right; font-size: 20px; font-weight: 800; color: #7c5cfc; font-variant-numeric: tabular-nums; min-width: 56px; }
+  .rank-val small { display: block; font-size: 11px; color: #bcc3cd; font-weight: 500; }
+  .inv-note { font-size: 12px; color: #8e99a4; margin-top: 12px; line-height: 1.8; }
   .panel { display: none; }
   .panel.active { display: block; }
   .page-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
@@ -334,6 +373,7 @@
     <button class="nav-tab" onclick="switchTab('topup')">补回空 <span class="nav-badge orange" id="topupCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('members')">会员管理 <span class="nav-badge purple" id="memberCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('servers')">服务器档案</button>
+    <button class="nav-tab" onclick="switchTab('invite')">邀请总览</button>
   </div>
 </nav>
 
@@ -524,6 +564,61 @@
     </div>
   </div>
 
+  <div class="panel" id="panel-invite">
+    <div class="page-heading">
+      <div>
+        <div class="page-title">邀请总览</div>
+        <div class="page-desc" id="invMeta">加载中…</div>
+      </div>
+      <button class="btn-secondary" onclick="loadInvite(true)">刷新</button>
+    </div>
+    <div class="inv-cards">
+      <div class="inv-card"><b id="invC1">-</b><span>统计人数</span></div>
+      <div class="inv-card"><b id="invC2">-</b><span>16号后新邀请（合计）</span></div>
+      <div class="inv-card"><b id="invC3">-</b><span>可领券人数</span></div>
+      <div class="inv-card"><b id="invC4">-</b><span>可疑账号</span></div>
+    </div>
+    <div class="inv-view">
+      <button class="on" data-v="rank" onclick="setInvView(this)">🏆 排行榜</button>
+      <button data-v="table" onclick="setInvView(this)">📋 明细表</button>
+    </div>
+    <div id="invRankBox">
+      <div class="inv-bar">
+        <button class="inv-f on" data-r="invited" onclick="setRankBy(this)">总邀请</button>
+        <button class="inv-f" data-r="new_invited" onclick="setRankBy(this)">16号后新邀请</button>
+        <button class="inv-f" data-r="invitees_paid" onclick="setRankBy(this)">带来充值人数</button>
+        <button class="inv-f" data-r="invitees_paid_quota" onclick="setRankBy(this)">下线兑换额度</button>
+      </div>
+      <div class="card" style="padding:4px 0;" id="invRank"></div>
+    </div>
+    <div id="invTableBox" style="display:none;">
+    <div class="inv-bar">
+      <input id="invQ" placeholder="搜索 ID 或用户名" oninput="renderInvite()">
+      <button class="inv-f on" data-f="all" onclick="setInvFilter(this)">全部</button>
+      <button class="inv-f" data-f="tier" onclick="setInvFilter(this)">可领券</button>
+      <button class="inv-f" data-f="good" onclick="setInvFilter(this)">带来充值</button>
+      <button class="inv-f" data-f="sus" onclick="setInvFilter(this)">可疑</button>
+      <button class="inv-f" data-f="ban" onclick="setInvFilter(this)">已封禁</button>
+    </div>
+    <div class="inv-sum" id="invSum"></div>
+    <div class="inv-wrap"><table class="data-table">
+      <thead><tr>
+        <th data-k="id">ID</th><th data-k="name">用户名</th>
+        <th data-k="invited" class="n">总邀请</th><th data-k="new_invited" class="n">16号后新邀请</th>
+        <th data-k="used" class="n">本人消耗</th><th data-k="self_redeemed" class="n">本人兑换</th>
+        <th data-k="invitees_paid" class="n">充值的下线</th><th data-k="invitees_paid_quota" class="n">下线兑换</th>
+        <th>标记</th>
+      </tr></thead>
+      <tbody id="invBody"></tbody>
+    </table></div>
+    </div>
+    <div class="inv-note">
+      数据由服务器每 30 分钟自动更新一次（单位：额度）。「充值的下线」= 他邀请来的人里兑换过兑换码的人数。<br>
+      可疑 = 邀请 ≥10 人、本人消耗 &lt;5、且下线没有任何人充值；只是初筛，处理前请人工核实。<br>
+      排行榜不含管理员账号，最多显示前 50 名。券档位按 16 号后新邀请计算：15 人 95折 / 20 人 9折 / 50 人 85折。点击表头可排序。
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -683,8 +778,128 @@
     svCopy(el.textContent.trim());
   });
 
+  // ---- 邀请总览（从私密仓库读取 invite_overview.json，由服务器脚本定时推送）----
+  const GH_INVITE_API = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/invite_overview.json';
+  let invData = null, invFilter = 'all', invSortKey = 'invited', invSortDir = -1;
+  function invMark(r) {
+    const t = [];
+    if (r.id === 1) t.push(['adm', '管理员']);
+    if (r.status === 2) t.push(['ban', '已封禁']);
+    if (r.tier) t.push(['tier', '可领 ' + r.tier]);
+    if (r.invitees_paid > 0) t.push(['good', '带来充值']);
+    if (r.id !== 1 && r.invited >= 10 && r.used < 5 && r.invitees_paid === 0) t.push(['sus', '可疑']);
+    return t;
+  }
+  async function loadInvite(force) {
+    if (invData && !force) { renderInvite(); return; }
+    const meta = document.getElementById('invMeta');
+    meta.textContent = '加载中…';
+    try {
+      const res = await fetch(GH_INVITE_API, { headers: { ...ghHeaders(), 'Accept': 'application/vnd.github.raw+json' }, cache: 'no-store' });
+      if (res.status === 404) { meta.textContent = '还没有数据：服务器脚本第一次推送成功后这里就会出现～'; return; }
+      if (!res.ok) throw new Error('GitHub API 错误: ' + res.status);
+      invData = JSON.parse(await res.text());
+      renderInvite();
+    } catch (e) {
+      console.error(e);
+      meta.textContent = '加载失败：' + e.message;
+    }
+  }
+  function setInvFilter(btn) {
+    document.querySelectorAll('.inv-f[data-f]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    invFilter = btn.dataset.f;
+    renderInvite();
+  }
+  let invView = 'rank', rankBy = 'invited';
+  const RANK_LABEL = { invited: '人', new_invited: '人', invitees_paid: '人充值', invitees_paid_quota: '额度' };
+  function setInvView(btn) {
+    document.querySelectorAll('.inv-view button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    invView = btn.dataset.v;
+    document.getElementById('invRankBox').style.display = invView === 'rank' ? '' : 'none';
+    document.getElementById('invTableBox').style.display = invView === 'table' ? '' : 'none';
+    renderInvite();
+  }
+  function setRankBy(btn) {
+    document.querySelectorAll('.inv-f[data-r]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    rankBy = btn.dataset.r;
+    renderRank();
+  }
+  function renderRank() {
+    const box = document.getElementById('invRank');
+    const list = (invData.rows || []).filter(r => r.id !== 1 && (r[rankBy] || 0) > 0)
+      .sort((a, b) => (b[rankBy] || 0) - (a[rankBy] || 0) || b.invited - a.invited).slice(0, 50);
+    if (!list.length) {
+      box.innerHTML = '<div style="text-align:center;color:#bcc3cd;padding:32px;">'
+        + (rankBy === 'new_invited' && !invData.baseline ? '起点表还没建，16号后的新邀请暂时没有数据～' : '暂时还没有人上榜～') + '</div>';
+      return;
+    }
+    const max = list[0][rankBy] || 1;
+    const medal = ['🥇', '🥈', '🥉'];
+    const fmt = v => Number.isInteger(v) ? v : (v || 0).toFixed(1);
+    box.innerHTML = list.map((r, i) => {
+      const tags = invMark(r).filter(t => t[0] === 'ban' || t[0] === 'sus' || t[0] === 'tier')
+        .map(t => '<span class="inv-tag ' + t[0] + '">' + t[1] + '</span>').join('');
+      return '<div class="rank-row">'
+        + '<div class="rank-no' + (i < 3 ? ' m' : '') + '">' + (i < 3 ? medal[i] : i + 1) + '</div>'
+        + '<div class="rank-main">'
+        + '<div class="rank-name">' + esc(r.name || '(无名)') + '<small>ID ' + r.id + '</small> ' + tags + '</div>'
+        + '<div class="rank-track"><div class="rank-fill" style="width:' + Math.max(3, (r[rankBy] || 0) / max * 100) + '%"></div></div>'
+        + '<div class="rank-sub">总邀请 ' + r.invited + (r.new_invited !== null && r.new_invited !== undefined ? ' · 新邀请 ' + r.new_invited : '')
+        + ' · 充值下线 ' + r.invitees_paid + ' 人 · 本人消耗 ' + fmt(r.used) + '</div>'
+        + '</div>'
+        + '<div class="rank-val">' + fmt(r[rankBy] || 0) + '<small>' + RANK_LABEL[rankBy] + '</small></div>'
+        + '</div>';
+    }).join('');
+  }
+  function renderInvite() {
+    if (!invData) return;
+    if (invView === 'rank') renderRank();
+    const rows0 = invData.rows || [];
+    const fmt = v => (v === null || v === undefined) ? '—' : (typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : v);
+    document.getElementById('invMeta').textContent = '更新于 ' + invData.generated_at + ' · 全站 ' + invData.total_users + ' 位用户'
+      + (invData.baseline ? '' : ' · 起点表还没建，「16号后新邀请」暂时为空');
+    document.getElementById('invC1').textContent = rows0.length;
+    document.getElementById('invC2').textContent = invData.baseline ? rows0.reduce((s, r) => s + (r.new_invited || 0), 0) : '—';
+    document.getElementById('invC3').textContent = rows0.filter(r => r.tier).length;
+    document.getElementById('invC4').textContent = rows0.filter(r => invMark(r).some(t => t[0] === 'sus')).length;
+    const k = document.getElementById('invQ').value.trim().toLowerCase();
+    let rows = rows0.filter(r => {
+      if (k && !String(r.id).includes(k) && !String(r.name).toLowerCase().includes(k)) return false;
+      if (invFilter === 'all') return true;
+      return invMark(r).some(t => t[0] === invFilter);
+    });
+    rows.sort((a, b) => {
+      const x = a[invSortKey], y = b[invSortKey];
+      if (typeof x === 'string' || typeof y === 'string') return String(x).localeCompare(String(y)) * invSortDir;
+      return ((x ?? -1) - (y ?? -1)) * invSortDir;
+    });
+    document.getElementById('invBody').innerHTML = rows.map(r => '<tr>'
+      + '<td class="id">' + r.id + '</td><td>' + esc(r.name) + '</td>'
+      + '<td class="n">' + r.invited + '</td><td class="n">' + fmt(r.new_invited) + '</td>'
+      + '<td class="n">' + fmt(r.used) + '</td><td class="n">' + fmt(r.self_redeemed) + '</td>'
+      + '<td class="n">' + r.invitees_paid + '</td><td class="n">' + fmt(r.invitees_paid_quota) + '</td>'
+      + '<td>' + invMark(r).map(t => '<span class="inv-tag ' + t[0] + '">' + t[1] + '</span>').join('') + '</td>'
+      + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#bcc3cd;padding:32px;">没有符合条件的用户</td></tr>';
+    document.getElementById('invSum').textContent = '显示 ' + rows.length + ' / ' + rows0.length + ' 人';
+    document.querySelectorAll('#panel-invite th[data-k]').forEach(th => {
+      th.textContent = th.textContent.replace(/ [▴▾]$/, '');
+      if (th.dataset.k === invSortKey) th.textContent += invSortDir < 0 ? ' ▾' : ' ▴';
+    });
+  }
+  document.addEventListener('click', (ev) => {
+    const th = ev.target.closest('#panel-invite th[data-k]');
+    if (!th) return;
+    const key = th.dataset.k;
+    if (invSortKey === key) invSortDir = -invSortDir;
+    else { invSortKey = key; invSortDir = (key === 'id' || key === 'name') ? 1 : -1; }
+    renderInvite();
+  });
+
   // ---- Tab ----
-  const TAB_NAMES = ['calc','config','history','topup','members','servers'];
+  const TAB_NAMES = ['calc','config','history','topup','members','servers','invite'];
   function switchTab(name) {
     document.querySelectorAll('.nav-tab').forEach((t, i) => {
       t.classList.toggle('active', TAB_NAMES[i] === name);
@@ -697,6 +912,7 @@
     if (name === 'history') renderHistory();
     if (name === 'members') renderMembers();
     if (name === 'servers') loadServers(false);
+    if (name === 'invite') loadInvite(false);
   }
 
   // ---- 模型配置 ----
