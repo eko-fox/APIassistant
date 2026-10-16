@@ -574,7 +574,7 @@
     </div>
     <div class="inv-cards">
       <div class="inv-card"><b id="invC1">-</b><span>统计人数</span></div>
-      <div class="inv-card"><b id="invC2">-</b><span>16号后新邀请（合计）</span></div>
+      <div class="inv-card"><b id="invC2">-</b><span>17号后新邀请（合计）</span></div>
       <div class="inv-card"><b id="invC3">-</b><span>可领券人数</span></div>
       <div class="inv-card"><b id="invC4">-</b><span>可疑账号</span></div>
     </div>
@@ -585,7 +585,7 @@
     <div id="invRankBox">
       <div class="inv-bar">
         <button class="inv-f on" data-r="invited" onclick="setRankBy(this)">总邀请</button>
-        <button class="inv-f" data-r="new_invited" onclick="setRankBy(this)">16号后新邀请</button>
+        <button class="inv-f" data-r="new_invited" onclick="setRankBy(this)">17号后新邀请</button>
         <button class="inv-f" data-r="invitees_paid" onclick="setRankBy(this)">带来充值人数</button>
         <button class="inv-f" data-r="invitees_paid_quota" onclick="setRankBy(this)">下线兑换额度</button>
       </div>
@@ -604,7 +604,7 @@
     <div class="inv-wrap"><table class="data-table">
       <thead><tr>
         <th data-k="id">ID</th><th data-k="name">用户名</th>
-        <th data-k="invited" class="n">总邀请</th><th data-k="new_invited" class="n">16号后新邀请</th>
+        <th data-k="invited" class="n">总邀请</th><th data-k="new_invited" class="n">17号后新邀请</th>
         <th data-k="used" class="n">本人消耗</th><th data-k="self_redeemed" class="n">本人兑换</th>
         <th data-k="invitees_paid" class="n">充值的下线</th><th data-k="invitees_paid_quota" class="n">下线兑换</th>
         <th>标记</th>
@@ -615,7 +615,7 @@
     <div class="inv-note">
       数据由服务器每 30 分钟自动更新一次（单位：额度）。「充值的下线」= 他邀请来的人里兑换过兑换码的人数。<br>
       可疑 = 邀请 ≥10 人、本人消耗 &lt;5、且下线没有任何人充值；只是初筛，处理前请人工核实。<br>
-      排行榜不含管理员账号，最多显示前 50 名。券档位按 16 号后新邀请计算：15 人 95折 / 20 人 9折 / 50 人 85折。点击表头可排序。
+      排行榜不含管理员账号，最多显示前 50 名。券档位按 17 号后新邀请计算：15 人 95折 / 25 人 9折 / 50 人 85折。点击表头可排序。
     </div>
   </div>
 
@@ -833,7 +833,7 @@
       .sort((a, b) => (b[rankBy] || 0) - (a[rankBy] || 0) || b.invited - a.invited).slice(0, 50);
     if (!list.length) {
       box.innerHTML = '<div style="text-align:center;color:#bcc3cd;padding:32px;">'
-        + (rankBy === 'new_invited' && !invData.baseline ? '起点表还没建，16号后的新邀请暂时没有数据～' : '暂时还没有人上榜～') + '</div>';
+        + (rankBy === 'new_invited' && !invData.baseline ? '起点表还没建，17号后的新邀请暂时没有数据～' : '暂时还没有人上榜～') + '</div>';
       return;
     }
     const max = list[0][rankBy] || 1;
@@ -860,7 +860,7 @@
     const rows0 = invData.rows || [];
     const fmt = v => (v === null || v === undefined) ? '—' : (typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : v);
     document.getElementById('invMeta').textContent = '更新于 ' + invData.generated_at + ' · 全站 ' + invData.total_users + ' 位用户'
-      + (invData.baseline ? '' : ' · 起点表还没建，「16号后新邀请」暂时为空');
+      + (invData.baseline ? '' : ' · 起点表还没建，「17号后新邀请」暂时为空');
     document.getElementById('invC1').textContent = rows0.length;
     document.getElementById('invC2').textContent = invData.baseline ? rows0.reduce((s, r) => s + (r.new_invited || 0), 0) : '—';
     document.getElementById('invC3').textContent = rows0.filter(r => r.tier).length;
