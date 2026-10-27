@@ -367,10 +367,7 @@
     </div>
   </div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('calc')">月度结算</button>
-    <button class="nav-tab" onclick="switchTab('config')">模型配置 <span class="nav-badge purple" id="configCount">0</span></button>
-    <button class="nav-tab" onclick="switchTab('history')">历史记录</button>
-    <button class="nav-tab" onclick="switchTab('topup')">补回空 <span class="nav-badge orange" id="topupCount">0</span></button>
+    <button class="nav-tab active" onclick="switchTab('topup')">补回空 <span class="nav-badge orange" id="topupCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('members')">会员管理 <span class="nav-badge purple" id="memberCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('servers')">服务器档案</button>
     <button class="nav-tab" onclick="switchTab('invite')">邀请总览</button>
@@ -387,66 +384,7 @@
 
 <div class="main">
 
-  <div class="panel active" id="panel-calc">
-    <div class="page-title">月度结算</div>
-    <div class="page-desc">输入各模型的调用次数，自动计算进货总额与 20% 提成</div>
-    <div class="month-row">
-      <label>结算月份</label>
-      <input type="month" id="monthPicker" />
-    </div>
-    <div id="calcEmpty" class="empty-hint" style="display:none;">
-      还没有配置模型，请先到「模型配置」添加模型和单价。
-    </div>
-    <div class="header-row" id="calcHeader">
-      <div>模型</div><div>单价</div><div>调用次数</div><div>进货总额</div><div>20% 提成</div>
-    </div>
-    <div id="calcList"></div>
-    <div class="summary">
-      <div class="summary-item">
-        <div class="s-label">进货总额</div>
-        <div class="s-value cost" id="totalCost">¥0.00</div>
-        <div class="s-unit">所有模型合计</div>
-      </div>
-      <div class="summary-item">
-        <div class="s-label">提成比例</div>
-        <div class="s-value rate">20%</div>
-        <div class="s-unit">固定比例</div>
-      </div>
-      <div class="summary-item">
-        <div class="s-label">应付提成</div>
-        <div class="s-value profit" id="totalProfit">¥0.00</div>
-        <div class="s-unit">进货总额 × 20%</div>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn-primary" onclick="saveRecord()">保存本月记录</button>
-      <button class="btn-secondary" onclick="exportCSV()">导出 CSV</button>
-    </div>
-  </div>
-
-  <div class="panel" id="panel-config">
-    <div class="page-title">模型配置</div>
-    <div class="page-desc">预设模型名称和进货单价，保存后每月结算只需输入调用次数</div>
-    <div id="configList"></div>
-    <button class="btn-add" onclick="addConfigModel()">+ 添加模型</button>
-    <button class="btn-primary" onclick="saveConfig()">保存配置</button>
-  </div>
-
-  <div class="panel" id="panel-history">
-    <div class="page-title">历史记录</div>
-    <div class="page-desc">每月结算的存档记录</div>
-    <table class="data-table">
-      <thead>
-        <tr><th>月份</th><th>模型数</th><th>总调用次数</th><th>进货总额</th><th>20% 提成</th><th>操作</th></tr>
-      </thead>
-      <tbody id="historyBody"></tbody>
-    </table>
-    <div class="actions">
-      <button class="btn-secondary" onclick="clearHistory()">清空历史</button>
-    </div>
-  </div>
-
-  <div class="panel" id="panel-topup">
+  <div class="panel active" id="panel-topup">
     <div class="page-heading">
       <div>
         <div class="page-title">补回空</div>
@@ -723,8 +661,6 @@
   let personColorMap = {};
 
   const now = new Date();
-  document.getElementById('monthPicker').value =
-    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
   document.getElementById('topupDate').value =
     now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
   document.getElementById('memberJoinDate').value =
@@ -899,17 +835,14 @@
   });
 
   // ---- Tab ----
-  const TAB_NAMES = ['calc','config','history','topup','members','servers','invite'];
+  const TAB_NAMES = ['topup','members','servers','invite'];
   function switchTab(name) {
     document.querySelectorAll('.nav-tab').forEach((t, i) => {
       t.classList.toggle('active', TAB_NAMES[i] === name);
     });
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
-    if (name === 'calc') renderCalc();
-    if (name === 'config') renderConfig();
     if (name === 'topup') renderTopups();
-    if (name === 'history') renderHistory();
     if (name === 'members') renderMembers();
     if (name === 'servers') loadServers(false);
     if (name === 'invite') loadInvite(false);
@@ -1442,9 +1375,6 @@
       }
     }
     syncFromDb();
-    renderCalc();
-    renderConfig();
-    renderHistory();
     renderTopups();
     renderMembers();
   }
