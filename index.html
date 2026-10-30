@@ -156,6 +156,40 @@
   .rank-val { flex-shrink: 0; text-align: right; font-size: 20px; font-weight: 800; color: #7c5cfc; font-variant-numeric: tabular-nums; min-width: 56px; }
   .rank-val small { display: block; font-size: 11px; color: #bcc3cd; font-weight: 500; }
   .inv-note { font-size: 12px; color: #8e99a4; margin-top: 12px; line-height: 1.8; }
+  @media (max-width: 760px) { .navbar { padding: 0 12px; } .brand { margin-right: 12px; } .nav-tabs { overflow-x: auto; scrollbar-width: none; } .nav-tabs::-webkit-scrollbar { display: none; } }
+  /* ===== 站点状态 ===== */
+  .sv2-banner { display: flex; align-items: center; gap: 10px; border-radius: 12px; padding: 12px 16px; font-size: 14px; font-weight: 500; margin-bottom: 16px; }
+  .sv2-banner.ok { background: #e6faf0; color: #15803d; }
+  .sv2-banner.warn { background: #fff7e6; color: #b45309; }
+  .sv2-banner.bad { background: #fde8e8; color: #c53030; }
+  .sv2-banner small { margin-left: auto; font-weight: 400; opacity: .8; }
+  .sv2-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; }
+  .sv2-card { background: #fff; border: 1px solid #e8ecf1; border-radius: 14px; padding: 18px 20px; }
+  .sv2-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .sv2-name { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+  .sv2-sub { font-size: 12px; color: #8e99a4; margin-top: 2px; }
+  .sv2-pill { font-size: 12px; padding: 3px 10px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .sv2-pill.ok { background: #e6faf0; color: #16a34a; }
+  .sv2-pill.warn { background: #fff3e6; color: #e67e22; }
+  .sv2-pill.bad { background: #fde8e8; color: #c53030; }
+  .sv2-row { display: grid; grid-template-columns: 52px 1fr 120px; align-items: center; gap: 10px; font-size: 13px; margin: 8px 0; }
+  .sv2-row .l { color: #8e99a4; }
+  .sv2-row .v { text-align: right; font-variant-numeric: tabular-nums; color: #4a5568; }
+  .sv2-track { height: 8px; background: #f0f2f5; border-radius: 4px; overflow: hidden; }
+  .sv2-fill { height: 100%; border-radius: 4px; background: #22c55e; }
+  .sv2-fill.y { background: #f59e0b; } .sv2-fill.r { background: #ef4444; }
+  .sv2-sec { font-size: 12px; color: #8e99a4; margin: 14px 0 6px; display: flex; gap: 12px; align-items: center; }
+  .sv2-sec i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; vertical-align: 3px; margin-right: 4px; }
+  .sv2-spark { width: 100%; height: 44px; display: block; background: #fafbfc; border-radius: 8px; }
+  .sv2-ct { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sv2-ct span { font-size: 12px; padding: 4px 9px; border-radius: 6px; background: #f5f7fa; color: #4a5568; }
+  .sv2-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; background: #22c55e; }
+  .sv2-dot.bad { background: #ef4444; }
+  .sv2-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .sv2-mini div { background: #f5f7fa; border-radius: 8px; padding: 8px 10px; }
+  .sv2-mini b { display: block; font-size: 16px; color: #1a1a2e; font-variant-numeric: tabular-nums; }
+  .sv2-mini span { font-size: 11px; color: #8e99a4; }
+  .sv2-empty { color: #8e99a4; font-size: 13px; padding: 20px 0; text-align: center; }
   .panel { display: none; }
   .panel.active { display: block; }
   .page-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
@@ -371,6 +405,7 @@
     <button class="nav-tab" onclick="switchTab('members')">会员管理 <span class="nav-badge purple" id="memberCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('servers')">服务器档案</button>
     <button class="nav-tab" onclick="switchTab('invite')">邀请总览</button>
+    <button class="nav-tab" onclick="switchTab('status')">站点状态</button>
   </div>
 </nav>
 
@@ -557,6 +592,18 @@
     </div>
   </div>
 
+  <div class="panel" id="panel-status">
+    <div class="page-heading">
+      <div>
+        <div class="page-title">站点状态</div>
+        <div class="page-desc">服务器每 5 分钟上报一次负载和容器状态，超过 15 分钟没上报视为离线</div>
+      </div>
+      <button class="btn-secondary" onclick="loadStatus(true)">刷新</button>
+    </div>
+    <div id="svBanner"></div>
+    <div class="sv2-grid" id="svGrid"></div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -714,6 +761,103 @@
     svCopy(el.textContent.trim());
   });
 
+  // ---- 站点状态（从私密仓库 APIassistant-status 读取，各服务器每 5 分钟上报）----
+  const GH_STATUS_REPO = 'APIassistant-status';
+  const SV_SERVERS = [
+    { file: '73', title: '73 · API 站', ip: '43.156.126.73' },
+    { file: '30', title: '30 · 数据库', ip: '43.163.115.30' }
+  ];
+  const SV_STALE = 15 * 60;
+  let svTimer = null;
+  function svLevel(pct) { return pct >= 90 ? 'r' : pct >= 80 ? 'y' : ''; }
+  function svPct(o) { return o && o.total ? Math.round(o.used / o.total * 100) : 0; }
+  function svUptime(s) {
+    const d = Math.floor(s / 86400);
+    if (d >= 30) return Math.floor(d / 30) + ' 个多月';
+    if (d >= 1) return d + ' 天';
+    return Math.floor(s / 3600) + ' 小时';
+  }
+  function svAgo(ts) {
+    const m = Math.round((Date.now() / 1000 - ts) / 60);
+    return m <= 0 ? '刚刚' : m < 60 ? m + ' 分钟前' : Math.round(m / 60) + ' 小时前';
+  }
+  function svBar(label, pct, text) {
+    return '<div class="sv2-row"><span class="l">' + label + '</span><div class="sv2-track"><div class="sv2-fill ' + svLevel(pct) +
+      '" style="width:' + Math.max(2, Math.min(100, pct)) + '%"></div></div><span class="v">' + text + '</span></div>';
+  }
+  function svSpark(hist) {
+    if (!hist || hist.length < 2) return '<div class="sv2-empty" style="padding:10px 0;">数据攒够两次以上就会画出来～</div>';
+    const n = hist.length, w = 300, h = 44;
+    const line = idx => hist.map((p, i) => (i / (n - 1) * w).toFixed(1) + ',' + (h - 3 - p[idx] / 100 * (h - 6)).toFixed(1)).join(' ');
+    return '<svg class="sv2-spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+      '<polyline fill="none" stroke="#22c55e" stroke-width="1.5" points="' + line(1) + '"/>' +
+      '<polyline fill="none" stroke="#3b82f6" stroke-width="1.5" points="' + line(2) + '"/></svg>';
+  }
+  function svIssues(d) {
+    const out = [];
+    if (!d) return out;
+    if (svPct(d.mem) >= 90) out.push('内存快满了');
+    if (d.swap && d.swap.total && svPct(d.swap) >= 90) out.push('Swap 快满了');
+    if (svPct(d.disk) >= 85) out.push('硬盘快满了');
+    if (d.cpu >= 90) out.push('CPU 很忙');
+    (d.containers || []).forEach(c => { if (c.state !== 'running') out.push('容器 ' + c.name + ' 没在运行'); });
+    if (d.api && !d.api.ok) out.push('API 访问失败');
+    return out;
+  }
+  function svCard(cfg, d) {
+    const head = (pill, cls, sub) => '<div class="sv2-head"><div><div class="sv2-name">' + cfg.title + '</div><div class="sv2-sub">' + sub +
+      '</div></div><span class="sv2-pill ' + cls + '">' + pill + '</span></div>';
+    if (!d) return '<div class="sv2-card">' + head('暂无数据', 'warn', cfg.ip) + '<div class="sv2-empty">还没收到这台服务器的上报，脚本跑通后这里就会出现～</div></div>';
+    const age = Date.now() / 1000 - d.ts;
+    const stale = age > SV_STALE;
+    const issues = svIssues(d);
+    const pill = stale ? '离线' : issues.length ? '在线 · 注意' : '在线';
+    const cls = stale ? 'bad' : issues.length ? 'warn' : 'ok';
+    const sub = esc(d.ip || cfg.ip) + ' · ' + d.cores + ' 核 · 已运行 ' + svUptime(d.uptime_s);
+    let h = '<div class="sv2-card">' + head(pill, cls, sub);
+    h += svBar('CPU', d.cpu, d.cpu + '% · 负载 ' + d.load[0]);
+    h += svBar('内存', svPct(d.mem), d.mem.used + ' / ' + d.mem.total + 'G');
+    if (d.swap && d.swap.total) h += svBar('Swap', svPct(d.swap), d.swap.used + ' / ' + d.swap.total + 'G');
+    h += svBar('硬盘', svPct(d.disk), Math.round(d.disk.used) + ' / ' + Math.round(d.disk.total) + 'G');
+    h += '<div class="sv2-sec">近 24 小时 <span><i style="background:#22c55e"></i>CPU</span><span><i style="background:#3b82f6"></i>内存</span></div>' + svSpark(d.history);
+    h += '<div class="sv2-sec">容器</div><div class="sv2-ct">' + ((d.containers || []).map(c =>
+      '<span><i class="sv2-dot ' + (c.state === 'running' ? '' : 'bad') + '"></i>' + esc(c.name) + (c.state === 'running' ? '' : ' · ' + esc(c.state)) +
+      (c.restarts ? ' · 重启 ' + c.restarts + ' 次' : '') + '</span>').join('') || '<span>没有容器</span>') + '</div>';
+    const mini = [];
+    if (d.api) mini.push(d.api.ok ? ['<b>' + d.api.ms + 'ms</b>', 'API 响应' + (d.api.version ? ' · ' + esc(d.api.version) : '')] : ['<b style="color:#c53030">失败</b>', 'API 访问']);
+    if (d.mysql_threads !== undefined) mini.push(['<b>' + d.mysql_threads + '</b>', 'MySQL 连接数']);
+    if (d.backup) mini.push(['<b>' + new Date(d.backup.ts * 1000).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) + '</b>', '最近一次备份 · ' + d.backup.size_mb + 'M']);
+    if (mini.length) h += '<div class="sv2-mini">' + mini.map(m => '<div>' + m[0] + '<span>' + m[1] + '</span></div>').join('') + '</div>';
+    h += '<div class="sv2-sub" style="margin-top:12px;">' + (stale ? '⚠️ 最后一次上报在 ' : '上报于 ') + svAgo(d.ts) + '</div>';
+    return h + '</div>';
+  }
+  async function loadStatus(manual) {
+    const grid = document.getElementById('svGrid');
+    const banner = document.getElementById('svBanner');
+    if (manual || !grid.innerHTML) grid.innerHTML = '<div class="sv2-empty">加载中…</div>';
+    const results = await Promise.all(SV_SERVERS.map(async cfg => {
+      try {
+        const res = await fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_STATUS_REPO + '/contents/' + cfg.file + '.json',
+          { headers: { ...ghHeaders(), 'Accept': 'application/vnd.github.raw+json' }, cache: 'no-store' });
+        if (!res.ok) return null;
+        return JSON.parse(await res.text());
+      } catch (e) { console.error(e); return null; }
+    }));
+    grid.innerHTML = SV_SERVERS.map((cfg, i) => svCard(cfg, results[i])).join('');
+    const problems = [];
+    SV_SERVERS.forEach((cfg, i) => {
+      const d = results[i];
+      if (!d) problems.push([1, cfg.file + ' 还没有数据']);
+      else if (Date.now() / 1000 - d.ts > SV_STALE) problems.push([2, cfg.file + ' 已经 ' + svAgo(d.ts).replace('前', '') + '没有上报，可能挂了']);
+      else svIssues(d).forEach(t => problems.push([1, cfg.file + ' 的' + t]));
+    });
+    const worst = problems.reduce((m, p) => Math.max(m, p[0]), 0);
+    const cls = worst === 2 ? 'bad' : worst === 1 ? 'warn' : 'ok';
+    const text = problems.length ? problems.map(p => p[1]).join('，') : '两台服务器都在线，一切正常';
+    banner.innerHTML = '<div class="sv2-banner ' + cls + '">' + (cls === 'ok' ? '✅ ' : cls === 'warn' ? '⚠️ ' : '🚨 ') + esc(text) +
+      '<small>' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) + ' 刷新</small></div>';
+  }
+
   // ---- 邀请总览（从私密仓库读取 invite_overview.json，由服务器脚本定时推送）----
   const GH_INVITE_API = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/invite_overview.json';
   let invData = null, invFilter = 'all', invSortKey = 'invited', invSortDir = -1;
@@ -835,7 +979,7 @@
   });
 
   // ---- Tab ----
-  const TAB_NAMES = ['topup','members','servers','invite'];
+  const TAB_NAMES = ['topup','members','servers','invite','status'];
   function switchTab(name) {
     document.querySelectorAll('.nav-tab').forEach((t, i) => {
       t.classList.toggle('active', TAB_NAMES[i] === name);
@@ -846,6 +990,8 @@
     if (name === 'members') renderMembers();
     if (name === 'servers') loadServers(false);
     if (name === 'invite') loadInvite(false);
+    clearInterval(svTimer);
+    if (name === 'status') { loadStatus(false); svTimer = setInterval(() => loadStatus(false), 60000); }
   }
 
   // ---- 模型配置 ----
