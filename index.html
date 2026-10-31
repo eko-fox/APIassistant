@@ -177,7 +177,8 @@
   .sv2-row .v { text-align: right; font-variant-numeric: tabular-nums; color: #4a5568; }
   .sv2-track { height: 8px; background: #f0f2f5; border-radius: 4px; overflow: hidden; }
   .sv2-fill { height: 100%; border-radius: 4px; background: #22c55e; }
-  .sv2-fill.y { background: #f59e0b; } .sv2-fill.r { background: #ef4444; }
+  .sv2-fill.y { background: #f59e0b; } .sv2-fill.r { background: #ef4444; } .sv2-fill.g { background: #cbd5e1; }
+  .sv2-note { font-size: 12px; color: #8e99a4; background: #f5f7fa; border-radius: 8px; padding: 6px 10px; margin-top: 6px; }
   .sv2-sec { font-size: 12px; color: #8e99a4; margin: 14px 0 6px; display: flex; gap: 12px; align-items: center; }
   .sv2-sec i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; vertical-align: 3px; margin-right: 4px; }
   .sv2-spark { width: 100%; height: 44px; display: block; background: #fafbfc; border-radius: 8px; }
@@ -781,8 +782,8 @@
     const m = Math.round((Date.now() / 1000 - ts) / 60);
     return m <= 0 ? '刚刚' : m < 60 ? m + ' 分钟前' : Math.round(m / 60) + ' 小时前';
   }
-  function svBar(label, pct, text) {
-    return '<div class="sv2-row"><span class="l">' + label + '</span><div class="sv2-track"><div class="sv2-fill ' + svLevel(pct) +
+  function svBar(label, pct, text, lvl) {
+    return '<div class="sv2-row"><span class="l">' + label + '</span><div class="sv2-track"><div class="sv2-fill ' + (lvl !== undefined ? lvl : svLevel(pct)) +
       '" style="width:' + Math.max(2, Math.min(100, pct)) + '%"></div></div><span class="v">' + text + '</span></div>';
   }
   function svSpark(hist) {
@@ -793,11 +794,16 @@
       '<polyline fill="none" stroke="#22c55e" stroke-width="1.5" points="' + line(1) + '"/>' +
       '<polyline fill="none" stroke="#3b82f6" stroke-width="1.5" points="' + line(2) + '"/></svg>';
   }
+  // Swap 满了但内存还够用 → 只是以前留下的痕迹，不算问题；内存也紧张时才算
+  function svSwapOnlyHistoric(d) {
+    if (!d.swap || !d.swap.total || svPct(d.swap) < 90) return null;
+    return svPct(d.mem) < 80;
+  }
   function svIssues(d) {
     const out = [];
     if (!d) return out;
     if (svPct(d.mem) >= 90) out.push('内存快满了');
-    if (d.swap && d.swap.total && svPct(d.swap) >= 90) out.push('Swap 快满了');
+    if (svSwapOnlyHistoric(d) === false) out.push('内存和 Swap 都快满了');
     if (svPct(d.disk) >= 85) out.push('硬盘快满了');
     if (d.cpu >= 90) out.push('CPU 很忙');
     (d.containers || []).forEach(c => { if (c.state !== 'running') out.push('容器 ' + c.name + ' 没在运行'); });
@@ -817,7 +823,11 @@
     let h = '<div class="sv2-card">' + head(pill, cls, sub);
     h += svBar('CPU', d.cpu, d.cpu + '% · 负载 ' + d.load[0]);
     h += svBar('内存', svPct(d.mem), d.mem.used + ' / ' + d.mem.total + 'G');
-    if (d.swap && d.swap.total) h += svBar('Swap', svPct(d.swap), d.swap.used + ' / ' + d.swap.total + 'G');
+    if (d.swap && d.swap.total) {
+      const hist = svSwapOnlyHistoric(d);
+      h += svBar('Swap', svPct(d.swap), d.swap.used + ' / ' + d.swap.total + 'G', hist ? 'g' : undefined);
+      if (hist) h += '<div class="sv2-note">💤 Swap 满着是以前内存紧张时留下的，现在内存够用，不用管～内存也快满了才会提醒</div>';
+    }
     h += svBar('硬盘', svPct(d.disk), Math.round(d.disk.used) + ' / ' + Math.round(d.disk.total) + 'G');
     h += '<div class="sv2-sec">近 24 小时 <span><i style="background:#22c55e"></i>CPU</span><span><i style="background:#3b82f6"></i>内存</span></div>' + svSpark(d.history);
     h += '<div class="sv2-sec">容器</div><div class="sv2-ct">' + ((d.containers || []).map(c =>
