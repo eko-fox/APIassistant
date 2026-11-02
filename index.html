@@ -191,6 +191,28 @@
   .sv2-mini b { display: block; font-size: 16px; color: #1a1a2e; font-variant-numeric: tabular-nums; }
   .sv2-mini span { font-size: 11px; color: #8e99a4; }
   .sv2-empty { color: #8e99a4; font-size: 13px; padding: 20px 0; text-align: center; }
+  /* ===== 上游比价 ===== */
+  .pc-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid #e8ecf1; background: #fff; }
+  .pc-wrap table { width: 100%; border-collapse: collapse; min-width: 640px; }
+  .pc-wrap th { background: #f8f9fb; padding: 11px 12px; font-size: 12px; color: #8e99a4; font-weight: 600; text-align: right; white-space: nowrap; }
+  .pc-wrap td { padding: 10px 12px; border-top: 1px solid #f0f2f5; font-size: 13px; text-align: right; vertical-align: top; font-variant-numeric: tabular-nums; }
+  .pc-wrap th:first-child, .pc-wrap td:first-child { text-align: left; }
+  .pc-wrap tr.pc-row { cursor: pointer; }
+  .pc-wrap tr.pc-row:hover td { background: #fafbfc; }
+  .pc-name { font-weight: 600; color: #1a1a2e; word-break: break-all; }
+  .pc-g { display: block; font-size: 11px; color: #8e99a4; margin-top: 2px; font-weight: 400; }
+  .pc-best { background: #e6faf0; color: #15803d; border-radius: 6px; padding: 1px 6px; font-weight: 600; }
+  .pc-na { color: #cbd5e1; }
+  .pc-own { color: #8e99a4; }
+  .pc-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 5px; margin-left: 6px; font-weight: 600; vertical-align: 1px; }
+  .pc-tag.sell { background: #eee8ff; color: #7c5cfc; }
+  .pc-tag.new { background: #fff3e6; color: #e67e22; }
+  .pc-tag.risk { background: #fff7e6; color: #b45309; margin-left: 4px; }
+  .pc-detail td { background: #fafbfc; text-align: left; font-size: 12px; color: #4a5568; }
+  .pc-detail .pc-src { display: inline-block; margin: 2px 14px 2px 0; }
+  .pc-detail b { color: #1a1a2e; }
+  .pc-unit { font-size: 10px; color: #bcc3cd; }
+  .pc-warn { background: #fde8e8; color: #c53030; border-radius: 10px; padding: 8px 12px; font-size: 13px; margin-bottom: 10px; }
   .panel { display: none; }
   .panel.active { display: block; }
   .page-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
@@ -407,6 +429,7 @@
     <button class="nav-tab" onclick="switchTab('servers')">服务器档案</button>
     <button class="nav-tab" onclick="switchTab('invite')">邀请总览</button>
     <button class="nav-tab" onclick="switchTab('status')">站点状态</button>
+    <button class="nav-tab" onclick="switchTab('prices')">上游比价</button>
   </div>
 </nav>
 
@@ -605,6 +628,37 @@
     <div class="sv2-grid" id="svGrid"></div>
   </div>
 
+  <div class="panel" id="panel-prices">
+    <div class="page-heading">
+      <div>
+        <div class="page-title">上游比价</div>
+        <div class="page-desc" id="pcMeta">加载中…</div>
+      </div>
+      <button class="btn-secondary" onclick="loadPrices(true)">刷新</button>
+    </div>
+    <div id="pcWarn"></div>
+    <div class="inv-view">
+      <button class="on" data-pv="sell" onclick="setPcView(this)">我在卖的</button>
+      <button data-pv="all" onclick="setPcView(this)">全部模型（找新渠道）</button>
+    </div>
+    <div class="inv-bar">
+      <input id="pcQ" placeholder="搜索模型名" oninput="renderPrices()">
+      <button class="inv-f on" data-pf="全部" onclick="setPcFam(this)">全部</button>
+      <button class="inv-f" data-pf="Claude" onclick="setPcFam(this)">Claude</button>
+      <button class="inv-f" data-pf="Gemini" onclick="setPcFam(this)">Gemini</button>
+      <button class="inv-f" data-pf="GPT" onclick="setPcFam(this)">GPT</button>
+      <button class="inv-f" data-pf="DeepSeek" onclick="setPcFam(this)">DeepSeek</button>
+      <button class="inv-f" data-pf="其他" onclick="setPcFam(this)">其他</button>
+    </div>
+    <div class="inv-sum" id="pcSum"></div>
+    <div class="pc-wrap"><table><thead id="pcHead"></thead><tbody id="pcBody"></tbody></table></div>
+    <div class="inv-note">
+      价格单位：人民币。按量计费显示「输入 / 输出」，单位是元 / 百万 token；按次计费显示元 / 次。绿色 = 几家上游里最便宜的。<br>
+      每家只比你在配置里选的分组；「订阅类」= cli、反重力、kiro 这类渠道，便宜但可能随时被官方封。点一行能看到每家每个分组的价格。<br>
+      服务器不参与：每天凌晨由 GitHub 自动抓一次各家公开价格。要改上游或分组，改 APIassistant-status 仓库里的 prices/upstreams.json。
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -761,6 +815,126 @@
     if (el.classList.contains('secret') && !el.classList.contains('shown')) { el.classList.add('shown'); svToast('再点一次可复制'); return; }
     svCopy(el.textContent.trim());
   });
+
+  // ---- 上游比价（GitHub Actions 每天抓各家 /api/pricing，存在 APIassistant-status/prices/prices.json）----
+  let pcData = null, pcView = 'sell', pcFam = '全部', pcOpen = {};
+  function pcMetric(o) { return o.type === 'call' ? o.call : o.in; }
+  function pcMoney(n) {
+    if (n === 0) return '0';
+    const a = Math.abs(n);
+    return a < 0.01 ? n.toFixed(4) : a < 1 ? n.toFixed(3) : n.toFixed(2);
+  }
+  function pcFmt(o) {
+    return o.type === 'call' ? '¥' + pcMoney(o.call) + '<span class="pc-unit"> /次</span>'
+      : '¥' + pcMoney(o.in) + ' / ' + pcMoney(o.out);
+  }
+  function pcRisky(srcId, group) {
+    const src = (pcData.sources || []).find(s => s.id === srcId);
+    const g = src && (src.groups || []).find(x => x.name === group);
+    return !!(g && g.risky);
+  }
+  function pcCompareType(m) {
+    if (m.prices.own && m.prices.own.length) return m.prices.own[0].type;
+    const cnt = { call: 0, token: 0 };
+    Object.keys(m.prices).forEach(k => m.prices[k].forEach(o => cnt[o.type]++));
+    return cnt.call > cnt.token ? 'call' : 'token';
+  }
+  function pcBestOf(offers, type) {
+    const same = offers.filter(o => o.type === type);
+    const pool = same.length ? same : offers;
+    return pool.reduce((b, o) => (!b || pcMetric(o) < pcMetric(b)) ? o : b, null);
+  }
+  function pcUpstreams() { return (pcData.sources || []).filter(s => !s.own); }
+  function pcIsNew(m) {
+    return m.first_seen > pcData.baseline_ts && (Date.now() / 1000 - m.first_seen) < 7 * 86400;
+  }
+  function pcCell(o, highlight, srcId) {
+    if (!o) return '<td class="pc-na">—</td>';
+    const risk = pcRisky(srcId, o.group) ? '<span class="pc-tag risk">订阅类</span>' : '';
+    return '<td>' + (highlight ? '<span class="pc-best">' + pcFmt(o) + '</span>' : pcFmt(o)) +
+      '<span class="pc-g">' + esc(o.group) + risk + '</span></td>';
+  }
+  function pcDetail(m, cols) {
+    const parts = (pcData.sources || []).filter(s => m.prices[s.id]).map(s =>
+      '<span class="pc-src"><b>' + esc(s.name) + '</b>：' + m.prices[s.id].map(o =>
+        esc(o.group) + ' ' + pcFmt(o) + (pcRisky(s.id, o.group) ? '（订阅类）' : '')).join('，') + '</span>');
+    return '<tr class="pc-detail"><td colspan="' + cols + '">' + parts.join('') + '</td></tr>';
+  }
+  async function loadPrices(force) {
+    if (pcData && !force) { renderPrices(); return; }
+    const meta = document.getElementById('pcMeta');
+    meta.textContent = '加载中…';
+    try {
+      const res = await fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_STATUS_REPO + '/contents/prices/prices.json',
+        { headers: { ...ghHeaders(), 'Accept': 'application/vnd.github.raw+json' }, cache: 'no-store' });
+      if (res.status === 404) { meta.textContent = '还没有数据：去 APIassistant-status 仓库的 Actions 里手动跑一次「上游比价」就有啦～'; return; }
+      if (!res.ok) throw new Error('GitHub API 错误: ' + res.status);
+      pcData = JSON.parse(await res.text());
+      renderPrices();
+    } catch (e) {
+      console.error(e);
+      meta.textContent = '加载失败：' + e.message;
+    }
+  }
+  function setPcView(btn) {
+    document.querySelectorAll('[data-pv]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on'); pcView = btn.dataset.pv; renderPrices();
+  }
+  function setPcFam(btn) {
+    document.querySelectorAll('[data-pf]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on'); pcFam = btn.dataset.pf; renderPrices();
+  }
+  function pcToggle(key) { pcOpen[key] = !pcOpen[key]; renderPrices(); }
+  function renderPrices() {
+    if (!pcData) return;
+    const ups = pcUpstreams();
+    document.getElementById('pcMeta').textContent = '更新于 ' + new Date(pcData.generated_at * 1000).toLocaleString('zh-CN') +
+      ' · 对比 ' + ups.map(s => s.name).join('、');
+    const bad = (pcData.sources || []).filter(s => !s.ok);
+    document.getElementById('pcWarn').innerHTML = bad.length ? '<div class="pc-warn">⚠️ ' + bad.map(s => esc(s.name) + ' 这次没抓到（' +
+      esc(s.error || '') + '），显示的是上一次的价格').join('；') + '</div>' : '';
+    const q = document.getElementById('pcQ').value.trim().toLowerCase();
+    let list = (pcData.models || []).filter(m => (pcFam === '全部' || m.family === pcFam) && (!q || m.key.includes(q)));
+    let head, rows, cols;
+    if (pcView === 'sell') {
+      list = list.filter(m => m.prices.own);
+      cols = ups.length + 2;
+      head = '<tr><th>模型</th>' + ups.map(s => '<th>' + esc(s.name) + '</th>').join('') + '<th>我的售价</th></tr>';
+      rows = list.map(m => {
+        const t = pcCompareType(m);
+        const bests = ups.map(s => m.prices[s.id] ? pcBestOf(m.prices[s.id], t) : null);
+        const cands = bests.filter(o => o && o.type === t);
+        const min = cands.length > 1 ? Math.min(...cands.map(pcMetric)) : null;
+        const own = pcBestOf(m.prices.own, t);
+        return '<tr class="pc-row" onclick="pcToggle(\'' + m.key.replace(/'/g, "\\'") + '\')"><td><span class="pc-name">' + esc(m.key) + '</span></td>' +
+          bests.map((o, i) => pcCell(o, min !== null && o && o.type === t && pcMetric(o) === min, ups[i].id)).join('') +
+          '<td class="pc-own">' + pcFmt(own) + '<span class="pc-g">' + esc(own.group) + '</span></td></tr>' +
+          (pcOpen[m.key] ? pcDetail(m, cols) : '');
+      });
+    } else {
+      list = list.filter(m => ups.some(s => m.prices[s.id]));
+      cols = 5;
+      head = '<tr><th>模型</th><th>最便宜</th><th>哪家 · 分组</th><th>第二便宜</th><th>几家有</th></tr>';
+      rows = list.map(m => {
+        const t = pcCompareType(m);
+        const offers = [];
+        ups.forEach(s => (m.prices[s.id] || []).filter(o => o.type === t).forEach(o => offers.push({ s, o })));
+        offers.sort((a, b) => pcMetric(a.o) - pcMetric(b.o));
+        const first = offers[0], second = offers.find(x => first && x.s.id !== first.s.id);
+        const tags = (m.prices.own ? '<span class="pc-tag sell">在卖</span>' : '') + (pcIsNew(m) ? '<span class="pc-tag new">新</span>' : '');
+        const n = ups.filter(s => m.prices[s.id]).length;
+        return '<tr class="pc-row" onclick="pcToggle(\'' + m.key.replace(/'/g, "\\'") + '\')"><td><span class="pc-name">' + esc(m.key) + '</span>' + tags + '</td>' +
+          (first ? '<td><span class="pc-best">' + pcFmt(first.o) + '</span></td><td>' + esc(first.s.name) + '<span class="pc-g">' + esc(first.o.group) +
+            (pcRisky(first.s.id, first.o.group) ? '<span class="pc-tag risk">订阅类</span>' : '') + '</span></td>' : '<td class="pc-na">—</td><td class="pc-na">—</td>') +
+          (second ? '<td>' + pcFmt(second.o) + '<span class="pc-g">' + esc(second.s.name) + ' · ' + esc(second.o.group) + '</span></td>' : '<td class="pc-na">—</td>') +
+          '<td>' + n + '</td></tr>' + (pcOpen[m.key] ? pcDetail(m, cols) : '');
+      });
+    }
+    document.getElementById('pcHead').innerHTML = head;
+    document.getElementById('pcBody').innerHTML = rows.join('') ||
+      '<tr><td colspan="' + cols + '" style="text-align:center;color:#bcc3cd;padding:32px;">没有符合条件的模型</td></tr>';
+    document.getElementById('pcSum').textContent = '共 ' + list.length + ' 个模型';
+  }
 
   // ---- 站点状态（从私密仓库 APIassistant-status 读取，各服务器每 5 分钟上报）----
   const GH_STATUS_REPO = 'APIassistant-status';
@@ -989,7 +1163,7 @@
   });
 
   // ---- Tab ----
-  const TAB_NAMES = ['topup','members','servers','invite','status'];
+  const TAB_NAMES = ['topup','members','servers','invite','status','prices'];
   function switchTab(name) {
     document.querySelectorAll('.nav-tab').forEach((t, i) => {
       t.classList.toggle('active', TAB_NAMES[i] === name);
@@ -1002,6 +1176,7 @@
     if (name === 'invite') loadInvite(false);
     clearInterval(svTimer);
     if (name === 'status') { loadStatus(false); svTimer = setInterval(() => loadStatus(false), 60000); }
+    if (name === 'prices') loadPrices(false);
   }
 
   // ---- 模型配置 ----
