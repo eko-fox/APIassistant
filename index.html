@@ -828,7 +828,9 @@
     return o.type === 'call' ? '¥' + pcMoney(o.call) + '<span class="pc-unit"> /次</span>'
       : '¥' + pcMoney(o.in) + ' / ' + pcMoney(o.out);
   }
-  function pcRisky(srcId, group) {
+  function pcLabel(o) { return esc(o.group) + (o.tag ? ' ' + esc(o.tag) : ''); }
+  function pcRisky(srcId, group, o) {
+    if (o && o.risky) return true;
     const src = (pcData.sources || []).find(s => s.id === srcId);
     const g = src && (src.groups || []).find(x => x.name === group);
     return !!(g && g.risky);
@@ -850,14 +852,14 @@
   }
   function pcCell(o, highlight, srcId) {
     if (!o) return '<td class="pc-na">—</td>';
-    const risk = pcRisky(srcId, o.group) ? '<span class="pc-tag risk">订阅类</span>' : '';
+    const risk = pcRisky(srcId, o.group, o) ? '<span class="pc-tag risk">订阅类</span>' : '';
     return '<td>' + (highlight ? '<span class="pc-best">' + pcFmt(o) + '</span>' : pcFmt(o)) +
-      '<span class="pc-g">' + esc(o.group) + risk + '</span></td>';
+      '<span class="pc-g">' + pcLabel(o) + risk + '</span></td>';
   }
   function pcDetail(m, cols) {
     const parts = (pcData.sources || []).filter(s => m.prices[s.id]).map(s =>
       '<span class="pc-src"><b>' + esc(s.name) + '</b>：' + m.prices[s.id].map(o =>
-        esc(o.group) + ' ' + pcFmt(o) + (pcRisky(s.id, o.group) ? '（订阅类）' : '')).join('，') + '</span>');
+        pcLabel(o) + ' ' + pcFmt(o) + (pcRisky(s.id, o.group, o) ? '（订阅类）' : '')).join('，') + '</span>');
     return '<tr class="pc-detail"><td colspan="' + cols + '">' + parts.join('') + '</td></tr>';
   }
   async function loadPrices(force) {
@@ -908,7 +910,7 @@
         const own = pcBestOf(m.prices.own, t);
         return '<tr class="pc-row" onclick="pcToggle(\'' + m.key.replace(/'/g, "\\'") + '\')"><td><span class="pc-name">' + esc(m.key) + '</span></td>' +
           bests.map((o, i) => pcCell(o, min !== null && o && o.type === t && pcMetric(o) === min, ups[i].id)).join('') +
-          '<td class="pc-own">' + pcFmt(own) + '<span class="pc-g">' + esc(own.group) + '</span></td></tr>' +
+          '<td class="pc-own">' + pcFmt(own) + '<span class="pc-g">' + pcLabel(own) + (m.prices.own.length > 1 ? ' 等 ' + m.prices.own.length + ' 个' : '') + '</span></td></tr>' +
           (pcOpen[m.key] ? pcDetail(m, cols) : '');
       });
     } else {
@@ -924,9 +926,9 @@
         const tags = (m.prices.own ? '<span class="pc-tag sell">在卖</span>' : '') + (pcIsNew(m) ? '<span class="pc-tag new">新</span>' : '');
         const n = ups.filter(s => m.prices[s.id]).length;
         return '<tr class="pc-row" onclick="pcToggle(\'' + m.key.replace(/'/g, "\\'") + '\')"><td><span class="pc-name">' + esc(m.key) + '</span>' + tags + '</td>' +
-          (first ? '<td><span class="pc-best">' + pcFmt(first.o) + '</span></td><td>' + esc(first.s.name) + '<span class="pc-g">' + esc(first.o.group) +
-            (pcRisky(first.s.id, first.o.group) ? '<span class="pc-tag risk">订阅类</span>' : '') + '</span></td>' : '<td class="pc-na">—</td><td class="pc-na">—</td>') +
-          (second ? '<td>' + pcFmt(second.o) + '<span class="pc-g">' + esc(second.s.name) + ' · ' + esc(second.o.group) + '</span></td>' : '<td class="pc-na">—</td>') +
+          (first ? '<td><span class="pc-best">' + pcFmt(first.o) + '</span></td><td>' + esc(first.s.name) + '<span class="pc-g">' + pcLabel(first.o) +
+            (pcRisky(first.s.id, first.o.group, first.o) ? '<span class="pc-tag risk">订阅类</span>' : '') + '</span></td>' : '<td class="pc-na">—</td><td class="pc-na">—</td>') +
+          (second ? '<td>' + pcFmt(second.o) + '<span class="pc-g">' + esc(second.s.name) + ' · ' + pcLabel(second.o) + '</span></td>' : '<td class="pc-na">—</td>') +
           '<td>' + n + '</td></tr>' + (pcOpen[m.key] ? pcDetail(m, cols) : '');
       });
     }
