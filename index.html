@@ -209,6 +209,7 @@
   .pc-tag.sell { background: #eee8ff; color: #7c5cfc; }
   .pc-tag.new { background: #fff3e6; color: #e67e22; }
   .pc-tag.risk { background: #fff7e6; color: #b45309; margin-left: 4px; }
+  .pc-grp td { background: #f5f3ff; color: #5b21b6; font-weight: 700; font-size: 12px; padding: 7px 12px; text-align: left; letter-spacing: .5px; }
   .pc-detail td { background: #fafbfc; text-align: left; font-size: 12px; color: #4a5568; }
   .pc-detail .pc-src { display: inline-block; margin: 2px 14px 2px 0; }
   .pc-detail b { color: #1a1a2e; }
@@ -651,6 +652,10 @@
       <button class="inv-f" data-pf="DeepSeek" onclick="setPcFam(this)">DeepSeek</button>
       <button class="inv-f" data-pf="其他" onclick="setPcFam(this)">其他</button>
     </div>
+    <div class="inv-view" style="margin-bottom:10px;">
+      <button class="on" data-ps="model" onclick="setPcSort(this)">按模型排</button>
+      <button data-ps="channel" onclick="setPcSort(this)">按渠道排</button>
+    </div>
     <div class="inv-sum" id="pcSum"></div>
     <div class="pc-wrap"><table><thead id="pcHead"></thead><tbody id="pcBody"></tbody></table></div>
     <div class="inv-note">
@@ -818,7 +823,7 @@
   });
 
   // ---- 上游比价（GitHub Actions 每天抓各家 /api/pricing，存在 APIassistant-status/prices/prices.json）----
-  let pcData = null, pcView = 'sell', pcFam = '全部', pcOpen = {};
+  let pcData = null, pcView = 'sell', pcFam = '全部', pcSort = 'model', pcOpen = {};
   function pcMetric(o) { return o.type === 'call' ? o.call : o.in; }
   function pcMoney(n) {
     if (n === 0) return '0';
@@ -891,6 +896,11 @@
     document.querySelectorAll('[data-pf]').forEach(b => b.classList.remove('on'));
     btn.classList.add('on'); pcFam = btn.dataset.pf; renderPrices();
   }
+  function setPcSort(btn) {
+    document.querySelectorAll('[data-ps]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on'); pcSort = btn.dataset.ps; renderPrices();
+  }
+  function pcGroupOf(m) { return m.channel_group || m.channel || ''; }
   function pcToggle(key) { pcOpen[key] = !pcOpen[key]; renderPrices(); }
   function renderPrices() {
     if (!pcData) return;
@@ -902,6 +912,12 @@
       esc(s.error || '') + '），显示的是上一次的价格').join('；') + '</div>' : '';
     const q = document.getElementById('pcQ').value.trim().toLowerCase();
     let list = (pcData.models || []).filter(m => (pcFam === '全部' || m.family === pcFam) && (!q || m.key.includes(q)));
+    if (pcSort === 'channel') {
+      list = list.slice().sort((a, b) => {
+        const ga = pcGroupOf(a) || '\uffff', gb = pcGroupOf(b) || '\uffff';
+        return ga.localeCompare(gb) || (a.channel || '').localeCompare(b.channel || '') || (a.name || a.key).localeCompare(b.name || b.key);
+      });
+    }
     let head, rows, cols;
     if (pcView === 'sell') {
       list = list.filter(m => m.prices.own);
@@ -935,6 +951,14 @@
             (pcRisky(first.s.id, first.o.group, first.o) ? '<span class="pc-tag risk">订阅类</span>' : '') + '</span></td>' : '<td class="pc-na">—</td><td class="pc-na">—</td>') +
           (second ? '<td>' + pcFmt(second.o) + '<span class="pc-g">' + esc(second.s.name) + ' · ' + pcLabel(second.o) + '</span></td>' : '<td class="pc-na">—</td>') +
           '<td>' + n + '</td></tr>' + (pcOpen[m.key] ? pcDetail(m, cols) : '');
+      });
+    }
+    if (pcSort === 'channel') {
+      let last = null;
+      rows = rows.map((r, i) => {
+        const g = pcGroupOf(list[i]);
+        const h = g !== last ? '<tr class="pc-grp"><td colspan="' + cols + '">' + (g ? esc(g.toUpperCase()) + ' 渠道' : '没有渠道标签的') + '</td></tr>' : '';
+        last = g; return h + r;
       });
     }
     document.getElementById('pcHead').innerHTML = head;
