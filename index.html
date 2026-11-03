@@ -200,6 +200,7 @@
   .pc-wrap tr.pc-row { cursor: pointer; }
   .pc-wrap tr.pc-row:hover td { background: #fafbfc; }
   .pc-name { font-weight: 600; color: #1a1a2e; word-break: break-all; }
+  .pc-ch { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 6px; background: #eef2ff; color: #4f46e5; margin-right: 6px; vertical-align: 1px; }
   .pc-g { display: block; font-size: 11px; color: #8e99a4; margin-top: 2px; font-weight: 400; }
   .pc-best { background: #e6faf0; color: #15803d; border-radius: 6px; padding: 1px 6px; font-weight: 600; }
   .pc-na { color: #cbd5e1; }
@@ -828,6 +829,10 @@
     return o.type === 'call' ? '¥' + pcMoney(o.call) + '<span class="pc-unit"> /次</span>'
       : '¥' + pcMoney(o.in) + ' / ' + pcMoney(o.out);
   }
+  function pcName(m) {
+    const ch = m.channel ? '<span class="pc-ch">' + esc(m.channel.toUpperCase()) + '</span>' : '';
+    return ch + '<span class="pc-name">' + esc(m.name || m.key) + '</span>';
+  }
   function pcLabel(o) { return esc(o.group) + (o.tag ? ' ' + esc(o.tag) : ''); }
   function pcRisky(srcId, group, o) {
     if (o && o.risky) return true;
@@ -908,7 +913,7 @@
         const cands = bests.filter(o => o && o.type === t);
         const min = cands.length > 1 ? Math.min(...cands.map(pcMetric)) : null;
         const own = pcBestOf(m.prices.own, t);
-        return '<tr class="pc-row" onclick="pcToggle(\'' + m.key.replace(/'/g, "\\'") + '\')"><td><span class="pc-name">' + esc(m.key) + '</span></td>' +
+        return '<tr class="pc-row" onclick="pcToggle(\'' + m.key.replace(/'/g, "\\'") + '\')"><td>' + pcName(m) + '</td>' +
           bests.map((o, i) => pcCell(o, min !== null && o && o.type === t && pcMetric(o) === min, ups[i].id)).join('') +
           '<td class="pc-own">' + pcFmt(own) + '<span class="pc-g">' + pcLabel(own) + (m.prices.own.length > 1 ? ' 等 ' + m.prices.own.length + ' 个' : '') + '</span></td></tr>' +
           (pcOpen[m.key] ? pcDetail(m, cols) : '');
@@ -925,7 +930,7 @@
         const first = offers[0], second = offers.find(x => first && x.s.id !== first.s.id);
         const tags = (m.prices.own ? '<span class="pc-tag sell">在卖</span>' : '') + (pcIsNew(m) ? '<span class="pc-tag new">新</span>' : '');
         const n = ups.filter(s => m.prices[s.id]).length;
-        return '<tr class="pc-row" onclick="pcToggle(\'' + m.key.replace(/'/g, "\\'") + '\')"><td><span class="pc-name">' + esc(m.key) + '</span>' + tags + '</td>' +
+        return '<tr class="pc-row" onclick="pcToggle(\'' + m.key.replace(/'/g, "\\'") + '\')"><td>' + pcName(m) + '' + tags + '</td>' +
           (first ? '<td><span class="pc-best">' + pcFmt(first.o) + '</span></td><td>' + esc(first.s.name) + '<span class="pc-g">' + pcLabel(first.o) +
             (pcRisky(first.s.id, first.o.group, first.o) ? '<span class="pc-tag risk">订阅类</span>' : '') + '</span></td>' : '<td class="pc-na">—</td><td class="pc-na">—</td>') +
           (second ? '<td>' + pcFmt(second.o) + '<span class="pc-g">' + esc(second.s.name) + ' · ' + pcLabel(second.o) + '</span></td>' : '<td class="pc-na">—</td>') +
