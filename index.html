@@ -1069,7 +1069,7 @@
     });
     const worst = problems.reduce((m, p) => Math.max(m, p[0]), 0);
     const cls = worst === 2 ? 'bad' : worst === 1 ? 'warn' : 'ok';
-    const text = problems.length ? problems.map(p => p[1]).join('，') : '两台服务器都在线，一切正常';
+    const text = problems.length ? problems.map(p => p[1]).join('，') : (SV_SERVERS.length + '台服务器都在线，一切正常');
     banner.innerHTML = '<div class="sv2-banner ' + cls + '">' + (cls === 'ok' ? '✅ ' : cls === 'warn' ? '⚠️ ' : '🚨 ') + esc(text) +
       '<small>' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) + ' 刷新</small></div>';
   }
