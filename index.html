@@ -437,6 +437,30 @@
     .page-heading { align-items: stretch; flex-direction: column; }
     .key-tool-link { justify-content: center; }
   }
+  /* ===== 主题切换 ===== */
+  .theme-switcher { display:flex; gap:4px; margin-left:auto; padding:4px; border:1px solid #e8ecf1; border-radius:10px; background:#f8f9fb; }
+  .theme-switcher button { border:0; background:transparent; width:28px; height:28px; border-radius:7px; cursor:pointer; font-size:15px; opacity:.55; transition:all .2s; }
+  .theme-switcher button:hover, .theme-switcher button.on { opacity:1; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.12); }
+  body[data-theme="dark"] { background:#0f172a; color:#e5e7eb; }
+  body[data-theme="dark"] .navbar { background:#111827; border-color:#243247; box-shadow:0 1px 8px rgba(0,0,0,.25); }
+  body[data-theme="dark"] .brand-name, body[data-theme="dark"] .page-title, body[data-theme="dark"] .sv2-name { color:#f8fafc; }
+  body[data-theme="dark"] .brand-sub, body[data-theme="dark"] .page-desc, body[data-theme="dark"] .sv2-sub, body[data-theme="dark"] .sv2-sec, body[data-theme="dark"] .sv2-row .l { color:#94a3b8; }
+  body[data-theme="dark"] .nav-tab { color:#94a3b8; }
+  body[data-theme="dark"] .nav-tab:hover { background:#1e293b; color:#f8fafc; }
+  body[data-theme="dark"] .nav-tab.active { background:#7c5cfc; color:#fff; }
+  body[data-theme="dark"] .card, body[data-theme="dark"] .sv2-card, body[data-theme="dark"] .inv-card { background:#172033; border-color:#293952; color:#e5e7eb; }
+  body[data-theme="dark"] .sv2-card { background:linear-gradient(145deg,#172033,#1b2540); }
+  body[data-theme="dark"] .sv2-track, body[data-theme="dark"] .sv2-mini div, body[data-theme="dark"] .sv2-note, body[data-theme="dark"] .sv2-ct span { background:#202d43; color:#cbd5e1; }
+  body[data-theme="dark"] .field input, body[data-theme="dark"] .field select, body[data-theme="dark"] input { background:#111827; border-color:#334155; color:#e5e7eb; }
+  body[data-theme="dark"] .theme-switcher { background:#1e293b; border-color:#334155; }
+  body[data-theme="dark"] .theme-switcher button:hover, body[data-theme="dark"] .theme-switcher button.on { background:#334155; }
+  body[data-theme="mint"] { background:#effaf6; color:#12332b; }
+  body[data-theme="mint"] .navbar { border-color:#c9eee1; }
+  body[data-theme="mint"] .nav-tab.active { background:#0f766e; }
+  body[data-theme="mint"] .sv2-card { background:linear-gradient(145deg,#fff,#effcf7); box-shadow:0 8px 24px rgba(13,148,136,.10); }
+  body[data-theme="mint"] .sv2-pill.ok { background:#dff8ee; color:#087f5b; }
+  body[data-theme="mint"] .theme-switcher { background:#e6f7f1; border-color:#b8e7d8; }
+  @media (max-width:760px) { .theme-switcher { margin-left:4px; flex-shrink:0; } }
 </style>
 </head>
 <body>
@@ -456,6 +480,11 @@
     <button class="nav-tab" onclick="switchTab('invite')">邀请总览</button>
     <button class="nav-tab" onclick="switchTab('status')">站点状态</button>
     <button class="nav-tab" onclick="switchTab('prices')">上游比价</button>
+  </div>
+  <div class="theme-switcher" title="切换主题">
+    <button type="button" data-theme-btn="light" onclick="setTheme('light')" aria-label="清爽紫">☀️</button>
+    <button type="button" data-theme-btn="dark" onclick="setTheme('dark')" aria-label="深夜蓝">🌙</button>
+    <button type="button" data-theme-btn="mint" onclick="setTheme('mint')" aria-label="薄荷绿">🌿</button>
   </div>
 </nav>
 
@@ -700,6 +729,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script>
+  // ---- 主题 ----
+  const THEME_KEY = 'apiassistant-theme';
+  function setTheme(theme) {
+    document.body.dataset.theme = theme;
+    localStorage.setItem(THEME_KEY, theme);
+    document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+      btn.classList.toggle('on', btn.dataset.themeBtn === theme);
+    });
+  }
+  setTheme(localStorage.getItem(THEME_KEY) || 'light');
+
   // ---- GitHub API 存储 ----
   const GH_OWNER = 'eko-fox';
   const GH_REPO = 'APIassistant-data';   // 私密数据仓库
