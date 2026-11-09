@@ -520,6 +520,13 @@
       </div>
     </div>
 
+    <div class="card" style="margin-bottom:12px;padding:14px 20px;">
+      <div class="field" style="max-width:420px;">
+        <label>搜索补回记录</label>
+        <input type="search" id="topupSearch" placeholder="输入用户名，实时筛选" oninput="renderTopups()" />
+      </div>
+    </div>
+
     <div class="card" id="topupListCard">
       <div id="topupList"></div>
     </div>
@@ -1417,11 +1424,19 @@
       `).join('') + `<div class="ts-item"><div class="ts-label">总计</div><div class="ts-value green">¥${grandTotal.toFixed(2)}</div></div>`;
     }
     const listEl = document.getElementById('topupList');
+    const keyword = (document.getElementById('topupSearch')?.value || '').trim().toLowerCase();
+    const visibleTopups = keyword
+      ? topupData.filter(t => String(t.user || '').toLowerCase().includes(keyword))
+      : topupData;
     if (topupData.length === 0) {
       listEl.innerHTML = '<div style="text-align:center;padding:32px;color:#bcc3cd;">还没有记录</div>';
       return;
     }
-    listEl.innerHTML = topupData.map(t => {
+    if (visibleTopups.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center;padding:32px;color:#bcc3cd;">没有找到匹配的用户</div>';
+      return;
+    }
+    listEl.innerHTML = visibleTopups.map(t => {
       const handler = t.handler || '未知';
       const user = t.user || '未知';
       const amountStr = t.amount > 0 ? '¥' + t.amount.toFixed(2) : '';
