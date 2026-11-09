@@ -631,9 +631,20 @@
   body[data-theme="dark"] .field select,
   body[data-theme="dark"] input[type="search"] { color:#f5f8ff !important; }
   body[data-theme="dark"] .field label { color:#a9b9d8 !important; }
+  /* ===== 轻量动效 ===== */
+  #fxLayer { position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:999; }
+  .fx-spark { position:fixed; width:7px; height:7px; border-radius:2px; background:hsl(var(--hue),90%,70%); box-shadow:0 0 10px hsla(var(--hue),90%,70%,.75); animation:fxBurst .65s cubic-bezier(.2,.8,.3,1) forwards; }
+  .fx-drift { position:absolute; top:-18px; width:7px; height:7px; border-radius:50%; background:hsla(var(--hue),88%,72%,.52); box-shadow:0 0 11px hsla(var(--hue),88%,72%,.35); animation:fxDrift var(--dur) linear forwards; }
+  body[data-theme="light"] .fx-drift { background:hsla(258,90%,70%,.32); }
+  body[data-theme="dark"] .fx-drift { background:hsla(225,95%,72%,.5); }
+  body[data-theme="mint"] .fx-drift { background:hsla(14,78%,65%,.42); border-radius:2px; }
+  @keyframes fxBurst { to { transform:translate(var(--dx),var(--dy)) rotate(180deg) scale(.15); opacity:0; } }
+  @keyframes fxDrift { to { transform:translate3d(var(--sway),110vh,0) rotate(300deg); opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { #fxLayer { display:none; } }
 </style>
 </head>
 <body>
+<div id="fxLayer" aria-hidden="true"></div>
 
 <nav class="navbar">
   <div class="brand">
@@ -909,6 +920,39 @@
     });
   }
   setTheme(localStorage.getItem(THEME_KEY) || 'light');
+
+  // ---- 轻量动效 ----
+  const fxLayer = document.getElementById('fxLayer');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function sparkleBurst(x, y) {
+    if (reduceMotion) return;
+    for (let i = 0; i < 8; i++) {
+      const el = document.createElement('i');
+      const a = Math.PI * 2 * i / 8, d = 24 + Math.random() * 28;
+      el.className = 'fx-spark';
+      el.style.left = x + 'px'; el.style.top = y + 'px';
+      el.style.setProperty('--dx', Math.cos(a) * d + 'px');
+      el.style.setProperty('--dy', Math.sin(a) * d + 'px');
+      el.style.setProperty('--hue', document.body.dataset.theme === 'mint' ? 14 : document.body.dataset.theme === 'dark' ? 225 : 258);
+      fxLayer.appendChild(el);
+      setTimeout(() => el.remove(), 750);
+    }
+  }
+  document.addEventListener('click', ev => {
+    if (ev.target.closest('button, a, .sv2-card, .card')) sparkleBurst(ev.clientX, ev.clientY);
+  });
+  function driftParticle() {
+    if (reduceMotion || document.hidden) return;
+    const el = document.createElement('i');
+    el.className = 'fx-drift';
+    el.style.left = Math.random() * 100 + '%';
+    el.style.setProperty('--sway', (Math.random() * 140 - 70) + 'px');
+    el.style.setProperty('--dur', (9 + Math.random() * 7) + 's');
+    el.style.setProperty('--hue', document.body.dataset.theme === 'mint' ? 14 : document.body.dataset.theme === 'dark' ? 225 : 258);
+    fxLayer.appendChild(el);
+    setTimeout(() => el.remove(), 17000);
+  }
+  if (!reduceMotion) setInterval(driftParticle, 1400);
 
   // ---- GitHub API 存储 ----
   const GH_OWNER = 'eko-fox';
