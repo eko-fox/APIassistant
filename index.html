@@ -1013,6 +1013,7 @@
     if (svPct(d.disk) >= 85) out.push('硬盘快满了');
     if (d.cpu >= 90) out.push('CPU 很忙');
     (d.containers || []).forEach(c => { if (c.state !== 'running') out.push('容器 ' + c.name + ' 没在运行'); });
+    (d.services || []).forEach(s => { if (s.active === false) out.push('服务 ' + s.name + ' 没在运行'); });
     if (d.api && !d.api.ok) out.push('API 访问失败');
     return out;
   }
@@ -1039,6 +1040,8 @@
     h += '<div class="sv2-sec">容器</div><div class="sv2-ct">' + ((d.containers || []).map(c =>
       '<span><i class="sv2-dot ' + (c.state === 'running' ? '' : 'bad') + '"></i>' + esc(c.name) + (c.state === 'running' ? '' : ' · ' + esc(c.state)) +
       (c.restarts ? ' · 重启 ' + c.restarts + ' 次' : '') + '</span>').join('') || '<span>没有容器</span>') + '</div>';
+    if (d.services && d.services.length) h += '<div class="sv2-sec">系统服务</div><div class="sv2-ct">' + d.services.map(s =>
+      '<span><i class="sv2-dot ' + (s.active ? '' : 'bad') + '"></i>' + esc(s.name) + (s.active ? '' : ' · ' + esc(s.state || 'inactive')) + '</span>').join('') + '</div>';
     const mini = [];
     if (d.api) mini.push(d.api.ok ? ['<b>' + d.api.ms + 'ms</b>', 'API 响应' + (d.api.version ? ' · ' + esc(d.api.version) : '')] : ['<b style="color:#c53030">失败</b>', 'API 访问']);
     if (d.mysql_threads !== undefined) mini.push(['<b>' + d.mysql_threads + '</b>', 'MySQL 连接数']);
