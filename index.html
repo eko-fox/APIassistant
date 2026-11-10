@@ -686,9 +686,15 @@
   body[data-theme="autumn"] .fx-drift { color:#c66a3d; text-shadow:0 0 9px rgba(198,106,61,.55); }
   body[data-theme="winter"] .fx-drift { color:#67a9d3; text-shadow:0 0 10px rgba(103,169,211,.65); }
 
+  /* ===== 飘落背景层 ===== */
+  #fxBack { position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+  #fxLayer { z-index:999; }
+  .navbar, .main { position:relative; z-index:1; }
+  .fx-drift { z-index:0; }
 </style>
 </head>
 <body>
+<div id="fxBack" aria-hidden="true"></div>
 <div id="fxLayer" aria-hidden="true"></div>
 
 <nav class="navbar">
@@ -971,6 +977,7 @@
 
   // ---- 轻量动效 ----
   const fxLayer = document.getElementById('fxLayer');
+  const fxBack = document.getElementById('fxBack');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function sparkleBurst(x, y) {
     if (reduceMotion) return;
@@ -1002,7 +1009,7 @@
     el.style.setProperty('--sway', (Math.random() * 140 - 70) + 'px');
     el.style.setProperty('--dur', (9 + Math.random() * 7) + 's');
     el.style.setProperty('--hue', document.body.dataset.theme === 'mint' ? 14 : document.body.dataset.theme === 'dark' ? 225 : 258);
-    fxLayer.appendChild(el);
+    fxBack.appendChild(el);
     setTimeout(() => el.remove(), 17000);
   }
   if (!reduceMotion) setInterval(driftParticle, 1400);
