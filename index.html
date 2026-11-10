@@ -641,6 +641,43 @@
   @keyframes fxBurst { to { transform:translate(var(--dx),var(--dy)) rotate(180deg) scale(.15); opacity:0; } }
   @keyframes fxDrift { to { transform:translate3d(var(--sway),110vh,0) rotate(300deg); opacity:0; } }
   @media (prefers-reduced-motion: reduce) { #fxLayer { display:none; } }
+  /* ===== 四季主题 ===== */
+  body[data-theme="spring"] { background:#f4fbf5; color:#20362a; }
+  body[data-theme="spring"] .navbar { background:linear-gradient(90deg,#fff,#f1fbf3); border-color:#cdebd4; }
+  body[data-theme="spring"] .nav-tab { color:#5f8068; }
+  body[data-theme="spring"] .nav-tab.active { background:#58a873; color:#fff; box-shadow:0 6px 18px rgba(88,168,115,.22); }
+  body[data-theme="spring"] .brand-icon { background:linear-gradient(135deg,#67c587,#f29ab4); }
+  body[data-theme="spring"] .card, body[data-theme="spring"] .sv2-card { background:#fff; border-color:#d8eee0; box-shadow:0 10px 26px rgba(72,139,91,.08); border-radius:18px; }
+  body[data-theme="spring"] .sv2-pill.ok { background:#e2f6e7; color:#31834b; }
+  body[data-theme="spring"] .theme-switcher { background:#edf9ef; border-color:#cdebd4; }
+
+  body[data-theme="summer"] { background:linear-gradient(160deg,#eefaff,#f8fdff); color:#17334a; }
+  body[data-theme="summer"] .navbar { background:linear-gradient(90deg,#ffffff,#eaf8ff); border-color:#b9e5f5; }
+  body[data-theme="summer"] .nav-tab { color:#4d7890; }
+  body[data-theme="summer"] .nav-tab.active { background:linear-gradient(100deg,#159bc5,#36c5d7); color:#fff; box-shadow:0 7px 20px rgba(21,155,197,.25); }
+  body[data-theme="summer"] .brand-icon { background:linear-gradient(135deg,#159bc5,#65d9e5); }
+  body[data-theme="summer"] .card, body[data-theme="summer"] .sv2-card { background:rgba(255,255,255,.82); border-color:#c9ebf5; box-shadow:0 12px 30px rgba(24,145,186,.10); border-radius:22px; backdrop-filter:blur(8px); }
+  body[data-theme="summer"] .sv2-pill.ok { background:#def8fb; color:#087f93; }
+  body[data-theme="summer"] .theme-switcher { background:#e8f8fc; border-color:#b9e5f5; }
+
+  body[data-theme="autumn"] { background:#fbf2e8; color:#493126; }
+  body[data-theme="autumn"] .navbar { background:#fffaf4; border-color:#e5c6a8; }
+  body[data-theme="autumn"] .nav-tab { color:#8b6852; }
+  body[data-theme="autumn"] .nav-tab.active { background:#b85c3a; color:#fff; box-shadow:0 6px 16px rgba(184,92,58,.22); }
+  body[data-theme="autumn"] .brand-icon { background:linear-gradient(135deg,#b85c3a,#e39a4b); border-radius:5px; }
+  body[data-theme="autumn"] .card, body[data-theme="autumn"] .sv2-card { background:#fffaf3; border-color:#e6cdb5; box-shadow:5px 6px 0 rgba(151,91,51,.10); border-radius:8px; }
+  body[data-theme="autumn"] .sv2-pill.ok { background:#e9f3df; color:#527b3f; }
+  body[data-theme="autumn"] .theme-switcher { background:#f8eadb; border-color:#e5c6a8; }
+
+  body[data-theme="winter"] { background:#edf4fb; color:#203347; }
+  body[data-theme="winter"] .navbar { background:rgba(255,255,255,.9); border-color:#c9dceb; box-shadow:0 4px 18px rgba(60,110,150,.08); }
+  body[data-theme="winter"] .nav-tab { color:#66829b; }
+  body[data-theme="winter"] .nav-tab.active { background:#5f9fca; color:#fff; box-shadow:0 6px 18px rgba(95,159,202,.22); }
+  body[data-theme="winter"] .brand-icon { background:linear-gradient(135deg,#8fc8e8,#b4a9ec); }
+  body[data-theme="winter"] .card, body[data-theme="winter"] .sv2-card { background:rgba(255,255,255,.88); border-color:#d0e2ef; box-shadow:0 10px 28px rgba(82,127,164,.10); border-radius:14px; }
+  body[data-theme="winter"] .sv2-pill.ok { background:#e4f2fb; color:#32769c; }
+  body[data-theme="winter"] .theme-switcher { background:#e7f1f8; border-color:#c9dceb; }
+
 </style>
 </head>
 <body>
@@ -662,10 +699,11 @@
     <button class="nav-tab" onclick="switchTab('status')">站点状态</button>
     <button class="nav-tab" onclick="switchTab('prices')">上游比价</button>
   </div>
-  <div class="theme-switcher" title="切换主题">
-    <button type="button" data-theme-btn="light" onclick="setTheme('light')" aria-label="清爽紫">☀️</button>
-    <button type="button" data-theme-btn="dark" onclick="setTheme('dark')" aria-label="深夜蓝">🌙</button>
-    <button type="button" data-theme-btn="mint" onclick="setTheme('mint')" aria-label="薄荷绿">🌿</button>
+  <div class="theme-switcher" title="切换四季主题">
+    <button type="button" data-theme-btn="spring" onclick="setTheme('spring')" aria-label="春">🌸</button>
+    <button type="button" data-theme-btn="summer" onclick="setTheme('summer')" aria-label="夏">☀️</button>
+    <button type="button" data-theme-btn="autumn" onclick="setTheme('autumn')" aria-label="秋">🍂</button>
+    <button type="button" data-theme-btn="winter" onclick="setTheme('winter')" aria-label="冬">❄️</button>
   </div>
 </nav>
 
@@ -919,7 +957,8 @@
       btn.classList.toggle('on', btn.dataset.themeBtn === theme);
     });
   }
-  setTheme(localStorage.getItem(THEME_KEY) || 'light');
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  setTheme(['spring','summer','autumn','winter'].includes(savedTheme) ? savedTheme : 'spring');
 
   // ---- 轻量动效 ----
   const fxLayer = document.getElementById('fxLayer');
@@ -933,7 +972,7 @@
       el.style.left = x + 'px'; el.style.top = y + 'px';
       el.style.setProperty('--dx', Math.cos(a) * d + 'px');
       el.style.setProperty('--dy', Math.sin(a) * d + 'px');
-      el.style.setProperty('--hue', document.body.dataset.theme === 'mint' ? 14 : document.body.dataset.theme === 'dark' ? 225 : 258);
+      el.style.setProperty('--hue', ({spring:335,summer:198,autumn:28,winter:205}[document.body.dataset.theme] || 335));
       fxLayer.appendChild(el);
       setTimeout(() => el.remove(), 750);
     }
