@@ -699,7 +699,8 @@
     <button class="nav-tab" onclick="switchTab('status')">站点状态</button>
     <button class="nav-tab" onclick="switchTab('prices')">上游比价</button>
   </div>
-  <div class="theme-switcher" title="切换四季主题">
+  <div class="theme-switcher" title="切换主题">
+    <button type="button" data-theme-btn="light" onclick="setTheme('light')" aria-label="默认主题">◻️</button>
     <button type="button" data-theme-btn="spring" onclick="setTheme('spring')" aria-label="春">🌸</button>
     <button type="button" data-theme-btn="summer" onclick="setTheme('summer')" aria-label="夏">☀️</button>
     <button type="button" data-theme-btn="autumn" onclick="setTheme('autumn')" aria-label="秋">🍂</button>
@@ -958,7 +959,7 @@
     });
   }
   const savedTheme = localStorage.getItem(THEME_KEY);
-  setTheme(['spring','summer','autumn','winter'].includes(savedTheme) ? savedTheme : 'spring');
+  setTheme(['light','spring','summer','autumn','winter'].includes(savedTheme) ? savedTheme : 'light');
 
   // ---- 轻量动效 ----
   const fxLayer = document.getElementById('fxLayer');
@@ -972,7 +973,7 @@
       el.style.left = x + 'px'; el.style.top = y + 'px';
       el.style.setProperty('--dx', Math.cos(a) * d + 'px');
       el.style.setProperty('--dy', Math.sin(a) * d + 'px');
-      el.style.setProperty('--hue', ({spring:335,summer:198,autumn:28,winter:205}[document.body.dataset.theme] || 335));
+      el.style.setProperty('--hue', ({light:258,spring:335,summer:198,autumn:28,winter:205}[document.body.dataset.theme] || 258));
       fxLayer.appendChild(el);
       setTimeout(() => el.remove(), 750);
     }
