@@ -984,6 +984,11 @@
     if (reduceMotion || document.hidden) return;
     const el = document.createElement('i');
     el.className = 'fx-drift';
+    const theme = document.body.dataset.theme || 'spring';
+    el.textContent = ({spring:'✿', summer:'✦', autumn:'🍂', winter:'❄'}[theme] || '✿');
+    el.style.fontSize = theme === 'autumn' ? '16px' : '13px';
+    el.style.background = 'transparent';
+    el.style.boxShadow = 'none';
     el.style.left = Math.random() * 100 + '%';
     el.style.setProperty('--sway', (Math.random() * 140 - 70) + 'px');
     el.style.setProperty('--dur', (9 + Math.random() * 7) + 's');
