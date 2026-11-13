@@ -712,6 +712,7 @@
   .log-act.edit { background:#e8f4fd; color:#1d6fb8; }
   .log-act.del { background:#fde8e8; color:#c53030; }
   .log-act.clear { background:#fff3e6; color:#b45309; }
+  .log-act.repo { background:#eef2ff; color:#4338ca; }
   .log-act.other { background:#eee8ff; color:#6d4de6; }
   .log-target { font-weight:600; color:#1a1a2e; }
   .log-detail { color:#6b7685; font-size:13px; }
@@ -738,11 +739,11 @@
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('topup')">补回空 <span class="nav-badge orange" id="topupCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('members')">会员管理 <span class="nav-badge purple" id="memberCount">0</span></button>
-    <button class="nav-tab" onclick="switchTab('log')">操作留痕 <span class="nav-badge" style="background:#e6faf0;color:#15803d;" id="logCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('servers')">服务器档案</button>
     <button class="nav-tab" onclick="switchTab('invite')">邀请总览</button>
     <button class="nav-tab" onclick="switchTab('status')">站点状态</button>
     <button class="nav-tab" onclick="switchTab('prices')">上游比价</button>
+    <button class="nav-tab" onclick="switchTab('log')">操作留痕 <span class="nav-badge" style="background:#e6faf0;color:#15803d;" id="logCount">0</span></button>
   </div>
   <button type="button" class="op-chip unset" id="opChip" onclick="askOperator()" title="点击设置当前操作人">👤 未设置</button>
   <div class="theme-switcher" title="切换主题">
@@ -884,7 +885,7 @@
     <div class="page-heading">
       <div>
         <div class="page-title">操作留痕</div>
-        <div class="page-desc">谁、在什么时候、做了什么。所有写操作自动记一条，存在私密仓库的 data.json 里</div>
+        <div class="page-desc">谁、在什么时候、做了什么。页面上的写操作自动记；站点被谁改过，从仓库提交记录里自动抓</div>
       </div>
       <button class="btn-secondary" onclick="exportLogs()">导出 CSV</button>
     </div>
@@ -917,6 +918,9 @@
           <option value="member.toggle">禁用 / 启用会员</option>
           <option value="member.clear">清空会员</option>
         </optgroup>
+        <optgroup label="站点">
+          <option value="repo.commit">站点修改（提交记录）</option>
+        </optgroup>
         <optgroup label="其他">
           <option value="config.save">保存模型配置</option>
           <option value="history.save">保存月度记录</option>
@@ -941,8 +945,8 @@
       <button class="btn-secondary" onclick="clearLogs()">清空留痕</button>
     </div>
     <div class="inv-note">
-      只记录通过本页面做的写操作；留痕和数据同存于 data.json，多台设备同时改会互相覆盖。<br>
-      最多保留最近 800 条，超出自动丢弃最旧的。点右上角「👤」可以改当前操作人。
+      两类记录：<b>页面操作</b>（补款、会员等，存在 data.json，最多保留最近 800 条）；<b>站点修改</b>（AI 助手改代码或内容后的提交记录，自动从 GitHub 读取，谁提交就显示谁的名字）。<br>
+      页面操作多台设备同时改会互相覆盖；点右上角「👤」可以改当前操作人。
     </div>
   </div>
 
@@ -1642,7 +1646,7 @@
   });
 
   // ---- Tab ----
-  const TAB_NAMES = ['topup','members','log','servers','invite','status','prices'];
+  const TAB_NAMES = ['topup','members','servers','invite','status','prices','log'];
   function switchTab(name) {
     document.querySelectorAll('.nav-tab').forEach((t, i) => {
       t.classList.toggle('active', TAB_NAMES[i] === name);
@@ -1651,7 +1655,7 @@
     document.getElementById('panel-' + name).classList.add('active');
     if (name === 'topup') renderTopups();
     if (name === 'members') renderMembers();
-    if (name === 'log') renderLogs();
+    if (name === 'log') { renderLogs(); loadRepoCommits(); }
     if (name === 'servers') loadServers(false);
     if (name === 'invite') loadInvite(false);
     clearInterval(svTimer);
@@ -2206,8 +2210,53 @@
     'history.save':  ['保存月度记录', 'edit'],
     'history.del':   ['删除月度记录', 'del'],
     'history.clear': ['清空月度记录', 'clear'],
-    'log.clear':     ['清空留痕', 'clear']
+    'log.clear':     ['清空留痕', 'clear'],
+    'repo.commit':   ['站点修改', 'repo']
   };
+
+  // 站点改动（谁改了这个仓库里的内容）——来自 GitHub 提交记录，公开只读
+  const REPO_COMMITS_API = 'https://api.github.com/repos/' + GH_OWNER + '/APIassistant/commits?per_page=80';
+  let repoCommits = [];
+  let repoCommitState = 'idle';
+  let repoCommitAt = 0;
+
+  async function loadRepoCommits(force) {
+    if (repoCommitState === 'loading') return;
+    if (!force && repoCommitState === 'ok' && Date.now() - repoCommitAt < 60000) return;
+    repoCommitState = 'loading';
+    try {
+      let res = await fetch(REPO_COMMITS_API, { headers: ghHeaders(), cache: 'no-store' });
+      // Token 如果只授权了数据仓库，读公开仓库会被拒——退回匿名读取（公共仓库不需要登录）
+      if (res.status === 401 || res.status === 403 || res.status === 404) {
+        res = await fetch(REPO_COMMITS_API, { cache: 'no-store' });
+      }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const list = await res.json();
+      repoCommits = (Array.isArray(list) ? list : []).map(c => {
+        const commit = c.commit || {};
+        return {
+          id: 'C' + c.sha,
+          ts: (commit.committer && commit.committer.date) || (commit.author && commit.author.date) || '',
+          who: (commit.author && commit.author.name) || (c.author && c.author.login) || '未知',
+          action: 'repo.commit',
+          target: String(c.sha || '').slice(0, 7),
+          detail: String(commit.message || '').split('\n')[0]
+        };
+      });
+      repoCommitState = 'ok';
+      repoCommitAt = Date.now();
+      updateLogBadge();
+    } catch (e) {
+      console.error(e);
+      repoCommitState = 'error';
+    }
+    renderLogs();
+  }
+
+  function allLogEntries() {
+    return (db.logs || []).concat(repoCommits)
+      .sort((a, b) => new Date(b.ts || 0) - new Date(a.ts || 0));
+  }
 
   function logKind(action) {
     return LOG_ACTIONS[action] || [action || '未知操作', 'other'];
@@ -2275,11 +2324,11 @@
     const el = document.getElementById('logCount');
     if (!el) return;
     const k = dayKey(new Date());
-    el.textContent = (db.logs || []).filter(l => dayKey(new Date(l.ts)) === k).length;
+    el.textContent = allLogEntries().filter(l => dayKey(new Date(l.ts)) === k).length;
   }
 
   function renderLogs() {
-    const logs = db.logs || [];
+    const logs = allLogEntries();
     const kw = (document.getElementById('logSearch')?.value || '').trim().toLowerCase();
     const type = document.getElementById('logType')?.value || '';
     const from = document.getElementById('logFrom')?.value || '';
@@ -2298,12 +2347,13 @@
 
     const todayN = logs.filter(l => dayKey(new Date(l.ts)) === dayKey(new Date())).length;
     const people = new Set(logs.map(l => l.who || '未署名')).size;
-    const last = logs[0] ? fmtLogTime(logs[0].ts) : '—';
+    const commitN = logs.filter(l => l.action === 'repo.commit').length;
     document.getElementById('logStats').innerHTML =
       '<span class="stat-chip total">共 ' + logs.length + ' 条</span>' +
       '<span class="stat-chip ok">今日 ' + todayN + ' 条</span>' +
       '<span class="stat-chip">操作人 ' + people + ' 位</span>' +
-      '<span class="stat-chip">最近 ' + esc(last) + '</span>' +
+      '<span class="stat-chip">站点修改 ' + commitN + ' 条</span>' +
+      (repoCommitState === 'error' ? '<span class="stat-chip bad">站点修改读取失败</span>' : '') +
       (logs.length !== rows.length ? '<span class="stat-chip warn">筛出 ' + rows.length + ' 条</span>' : '');
 
     const tbody = document.getElementById('logBody');
@@ -2318,7 +2368,9 @@
         '<td class="log-time">' + esc(fmtLogTime(l.ts)) + '</td>' +
         '<td><span class="log-who">' + esc(l.who || '未署名') + '</span></td>' +
         '<td><span class="log-act ' + k[1] + '">' + esc(k[0]) + '</span></td>' +
-        '<td class="log-target">' + esc(l.target || '—') + '</td>' +
+        '<td class="log-target">' + (l.action === 'repo.commit'
+          ? '<a href="https://github.com/' + GH_OWNER + '/APIassistant/commit/' + esc(l.target) + '" target="_blank" rel="noopener noreferrer">' + esc(l.target) + '</a>'
+          : esc(l.target || '—')) + '</td>' +
         '<td class="log-detail">' + esc(l.detail || '') + '</td>' +
         '</tr>';
     }).join('') +
@@ -2333,7 +2385,7 @@
   }
 
   function exportLogs() {
-    const logs = db.logs || [];
+    const logs = allLogEntries();
     if (!logs.length) { alert('还没有留痕可导出'); return; }
     const cell = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
     let csv = '\ufeff时间,操作人,操作,对象,详情\n';
