@@ -691,6 +691,36 @@
   #fxLayer { z-index:999; }
   .navbar, .main { position:relative; z-index:1; }
   .fx-drift { z-index:0; }
+
+  /* ===== 操作留痕 ===== */
+  .op-chip {
+    display:inline-flex; align-items:center; gap:6px; margin-left:auto; margin-right:10px;
+    background:#f0f2f5; border:1px solid #e0e4ea; border-radius:999px;
+    padding:6px 13px; font-size:13px; color:#4a5568; cursor:pointer; font-family:inherit;
+    white-space:nowrap; max-width:170px; overflow:hidden; text-overflow:ellipsis; flex-shrink:0;
+  }
+  .op-chip:hover { border-color:#7c5cfc; color:#6d4de6; }
+  .op-chip.unset { color:#b45309; background:#fff7e6; border-color:#fde68a; }
+  .log-stats { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .log-wrap { overflow-x:auto; border:1px solid #e8ecf1; border-radius:14px; background:#fff; }
+  .log-wrap .data-table { border:none; border-radius:0; min-width:720px; }
+  .log-wrap td, .log-wrap th { padding:11px 14px; vertical-align:middle; }
+  .log-time { font-variant-numeric:tabular-nums; color:#6b7685; font-size:13px; white-space:nowrap; }
+  .log-who { display:inline-block; padding:2px 10px; border-radius:6px; font-size:12.5px; font-weight:600; background:#eef2f7; color:#334155; white-space:nowrap; }
+  .log-act { display:inline-block; padding:2px 9px; border-radius:6px; font-size:12px; font-weight:600; white-space:nowrap; }
+  .log-act.add { background:#e6faf0; color:#15803d; }
+  .log-act.edit { background:#e8f4fd; color:#1d6fb8; }
+  .log-act.del { background:#fde8e8; color:#c53030; }
+  .log-act.clear { background:#fff3e6; color:#b45309; }
+  .log-act.other { background:#eee8ff; color:#6d4de6; }
+  .log-target { font-weight:600; color:#1a1a2e; }
+  .log-detail { color:#6b7685; font-size:13px; }
+  body[data-theme="dark"] .op-chip { background:#1e293b; border-color:#334155; color:#cbd5e1; }
+  body[data-theme="dark"] .op-chip.unset { background:#3a2a10; border-color:#7a5a16; color:#fbbf24; }
+  body[data-theme="dark"] .log-wrap { background:#172033; border-color:#293952; }
+  body[data-theme="dark"] .log-who { background:#26334d; color:#cbd5e1; }
+  body[data-theme="dark"] .log-time, body[data-theme="dark"] .log-detail { color:#94a3b8; }
+  body[data-theme="dark"] .log-target { color:#e5e7eb; }
 </style>
 </head>
 <body>
@@ -708,11 +738,13 @@
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('topup')">补回空 <span class="nav-badge orange" id="topupCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('members')">会员管理 <span class="nav-badge purple" id="memberCount">0</span></button>
+    <button class="nav-tab" onclick="switchTab('log')">操作留痕 <span class="nav-badge" style="background:#e6faf0;color:#15803d;" id="logCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('servers')">服务器档案</button>
     <button class="nav-tab" onclick="switchTab('invite')">邀请总览</button>
     <button class="nav-tab" onclick="switchTab('status')">站点状态</button>
     <button class="nav-tab" onclick="switchTab('prices')">上游比价</button>
   </div>
+  <button type="button" class="op-chip unset" id="opChip" onclick="askOperator()" title="点击设置当前操作人">👤 未设置</button>
   <div class="theme-switcher" title="切换主题">
     <button type="button" data-theme-btn="light" onclick="setTheme('light')" aria-label="默认主题">◻️</button>
     <button type="button" data-theme-btn="spring" onclick="setTheme('spring')" aria-label="春">🌸</button>
@@ -845,6 +877,72 @@
 
     <div class="actions">
       <button class="btn-secondary" onclick="clearMembers()">清空所有会员</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-log">
+    <div class="page-heading">
+      <div>
+        <div class="page-title">操作留痕</div>
+        <div class="page-desc">谁、在什么时候、做了什么。所有写操作自动记一条，存在私密仓库的 data.json 里</div>
+      </div>
+      <button class="btn-secondary" onclick="exportLogs()">导出 CSV</button>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <span style="font-size:13px;color:#8e99a4;font-weight:500;">当前操作人</span>
+      <input id="opNameInput" type="text" placeholder="填你的名字" oninput="saveOperatorName(this.value)"
+        style="flex:1;min-width:150px;max-width:240px;background:#f5f7fa;border:1px solid #e0e4ea;border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;" />
+      <span id="opTip" style="font-size:12px;color:#bcc3cd;"></span>
+    </div>
+
+    <div class="log-stats" id="logStats"></div>
+
+    <div class="inv-bar">
+      <input id="logSearch" placeholder="搜索操作人 / 对象 / 详情" oninput="renderLogs()" />
+      <select id="logType" onchange="renderLogs()"
+        style="background:#fff;border:1px solid #e0e4ea;border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;color:#4a5568;">
+        <option value="">全部类型</option>
+        <optgroup label="补款">
+          <option value="topup.add">补款登记</option>
+          <option value="topup.edit">修改补款</option>
+          <option value="topup.del">删除补款</option>
+          <option value="topup.clear">清空补款</option>
+        </optgroup>
+        <optgroup label="会员">
+          <option value="member.add">新增会员</option>
+          <option value="member.renew">会员续期</option>
+          <option value="member.edit">修改会员</option>
+          <option value="member.del">删除会员</option>
+          <option value="member.toggle">禁用 / 启用会员</option>
+          <option value="member.clear">清空会员</option>
+        </optgroup>
+        <optgroup label="其他">
+          <option value="config.save">保存模型配置</option>
+          <option value="history.save">保存月度记录</option>
+          <option value="history.del">删除月度记录</option>
+          <option value="history.clear">清空月度记录</option>
+          <option value="log.clear">清空留痕</option>
+        </optgroup>
+      </select>
+      <input type="date" id="logFrom" onchange="renderLogs()" title="开始日期" style="flex:0 0 auto;min-width:150px;" />
+      <input type="date" id="logTo" onchange="renderLogs()" title="结束日期" style="flex:0 0 auto;min-width:150px;" />
+      <button class="inv-f" onclick="resetLogFilters()">全部时间</button>
+    </div>
+
+    <div class="log-wrap">
+      <table class="data-table">
+        <thead><tr><th>时间</th><th>操作人</th><th>操作</th><th>对象</th><th>详情</th></tr></thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn-secondary" onclick="clearLogs()">清空留痕</button>
+    </div>
+    <div class="inv-note">
+      只记录通过本页面做的写操作；留痕和数据同存于 data.json，多台设备同时改会互相覆盖。<br>
+      最多保留最近 800 条，超出自动丢弃最旧的。点右上角「👤」可以改当前操作人。
     </div>
   </div>
 
@@ -1066,6 +1164,7 @@
       if (!db.history) db.history = [];
       if (!db.topups) db.topups = [];
       if (!db.members) db.members = [];
+      if (!db.logs) db.logs = [];
     } catch(e) {
       console.error(e);
       alert('加载数据失败: ' + e.message);
@@ -1543,7 +1642,7 @@
   });
 
   // ---- Tab ----
-  const TAB_NAMES = ['topup','members','servers','invite','status','prices'];
+  const TAB_NAMES = ['topup','members','log','servers','invite','status','prices'];
   function switchTab(name) {
     document.querySelectorAll('.nav-tab').forEach((t, i) => {
       t.classList.toggle('active', TAB_NAMES[i] === name);
@@ -1552,6 +1651,7 @@
     document.getElementById('panel-' + name).classList.add('active');
     if (name === 'topup') renderTopups();
     if (name === 'members') renderMembers();
+    if (name === 'log') renderLogs();
     if (name === 'servers') loadServers(false);
     if (name === 'invite') loadInvite(false);
     clearInterval(svTimer);
@@ -1574,6 +1674,7 @@
   async function saveConfig() {
     configModels = configModels.filter(m => m.name && m.name.trim() !== '');
     db.models = configModels.map(m => ({ name: m.name.trim(), price: parseFloat(m.price) || 0 }));
+    logAction('config.save', '模型配置', '保存 ' + configModels.length + ' 个模型');
     await saveData();
     document.getElementById('configCount').textContent = configModels.length;
     renderConfig();
@@ -1691,6 +1792,10 @@
       note: note, date: date,
       createdAt: new Date().toLocaleString('zh-CN')
     });
+    if (!getOperator()) saveOperatorName(handler);
+    logAction('topup.add', user,
+      '补款' + (amount ? ' ¥' + parseFloat(amount).toFixed(2) : '') + ' · 日期 ' + date + (note ? ' · ' + note : ''),
+      handler);
     await saveData();
 
     document.getElementById('topupUser').value = '';
@@ -1702,7 +1807,11 @@
 
   async function deleteTopup(id) {
     if (!confirm('确定删除这条记录？')) return;
+    const rec = db.topups.find(t => t.id === id);
     db.topups = db.topups.filter(t => t.id !== id);
+    logAction('topup.del', rec ? rec.user : ('id ' + id),
+      rec ? ('删除补款' + (rec.amount ? ' ¥' + Number(rec.amount).toFixed(2) : '') + ' · 日期 ' + (rec.date || '')) : '删除一条记录',
+      rec ? (rec.handler || '') : '');
     await saveData();
     syncFromDb();
     renderTopups();
@@ -1710,7 +1819,10 @@
 
   async function clearTopups() {
     if (!confirm('确定清空所有补回空记录？')) return;
+    const n = db.topups.length;
+    const total = db.topups.reduce((s, t) => s + (Number(t.amount) || 0), 0);
     db.topups = [];
+    logAction('topup.clear', '全部补款', '清空 ' + n + ' 条，合计 ¥' + total.toFixed(2));
     await saveData();
     syncFromDb();
     renderTopups();
@@ -1795,11 +1907,20 @@
     if (!user || !handler || !date) { alert('用户名、经手人、日期不能为空'); return; }
     const idx = db.topups.findIndex(t => t.id === id);
     if (idx < 0) return;
+    const old = Object.assign({}, db.topups[idx]);
     db.topups[idx].user = user;
     db.topups[idx].handler = handler;
     db.topups[idx].amount = amount ? parseFloat(amount) : 0;
     db.topups[idx].date = date;
     db.topups[idx].note = note;
+    const newAmount = amount ? parseFloat(amount) : 0;
+    const changes = [];
+    if (old.user !== user) changes.push('用户 ' + old.user + ' → ' + user);
+    if (old.handler !== handler) changes.push('经手人 ' + old.handler + ' → ' + handler);
+    if ((Number(old.amount) || 0) !== newAmount) changes.push('金额 ¥' + (Number(old.amount) || 0) + ' → ¥' + newAmount);
+    if (old.date !== date) changes.push('日期 ' + old.date + ' → ' + date);
+    if ((old.note || '') !== note) changes.push('备注 ' + (old.note || '空') + ' → ' + (note || '空'));
+    logAction('topup.edit', user, changes.length ? changes.join(' · ') : '保存（内容无变化）', handler);
     await saveData();
     syncFromDb();
     renderTopups();
@@ -1826,6 +1947,7 @@
     if (existing >= 0) db.history[existing] = record;
     else db.history.unshift(record);
 
+    logAction('history.save', month, '调用 ' + totalCalls.toLocaleString() + ' 次 · 进货 ¥' + totalCost.toFixed(4));
     await saveData();
     syncFromDb();
     alert('已保存 ' + month + ' 的记录');
@@ -1845,6 +1967,7 @@
   async function deleteRecord(month) {
     if (!confirm('确定删除 ' + month + ' 的记录？')) return;
     db.history = db.history.filter(h => h.month !== month);
+    logAction('history.del', month, '删除 ' + month + ' 月度记录');
     await saveData();
     syncFromDb();
     renderHistory();
@@ -1885,7 +2008,9 @@
 
   async function clearHistory() {
     if (!confirm('确定清空所有历史记录？')) return;
+    const n = db.history.length;
     db.history = [];
+    logAction('history.clear', '全部月度记录', '清空 ' + n + ' 条');
     await saveData();
     syncFromDb();
     renderHistory();
@@ -1905,6 +2030,7 @@
       joinDate: joinDate || '', expiry: expiry, note: note || ''
     });
     db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+    logAction('member.add', name, '酒馆 ' + tavern + ' 号 · 到期 ' + expiry + (joinDate ? ' · 创建 ' + joinDate : '') + (note ? ' · ' + note : ''));
     await saveData();
     document.getElementById('memberName').value = '';
     document.getElementById('memberNote').value = '';
@@ -1915,12 +2041,15 @@
   async function renewMember(id, days) {
     const idx = db.members.findIndex(m => m.id === id);
     if (idx < 0) return;
-    const cur = new Date(db.members[idx].expiry);
+    const member = db.members[idx];
+    const oldExpiry = member.expiry;
+    const cur = new Date(member.expiry);
     const today = new Date();
     const base = cur > today ? cur : today;
     base.setDate(base.getDate() + days);
-    db.members[idx].expiry = base.toISOString().slice(0, 10);
+    member.expiry = base.toISOString().slice(0, 10);
     db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+    logAction('member.renew', member.name, '续期 ' + days + ' 天：' + oldExpiry + ' → ' + member.expiry);
     await saveData();
     syncFromDb();
     renderMembers();
@@ -1928,7 +2057,9 @@
 
   async function deleteMember(id) {
     if (!confirm('确定删除这个会员？')) return;
+    const rec = db.members.find(m => m.id === id);
     db.members = db.members.filter(m => m.id !== id);
+    logAction('member.del', rec ? rec.name : ('id ' + id), rec ? ('删除会员 · 到期 ' + rec.expiry + (rec.note ? ' · ' + rec.note : '')) : '删除一条记录');
     await saveData();
     syncFromDb();
     renderMembers();
@@ -1936,7 +2067,9 @@
 
   async function clearMembers() {
     if (!confirm('确定清空所有会员记录？')) return;
+    const n = db.members.length;
     db.members = [];
+    logAction('member.clear', '全部会员', '清空 ' + n + ' 条会员记录');
     await saveData();
     syncFromDb();
     renderMembers();
@@ -1946,6 +2079,7 @@
     const idx = db.members.findIndex(m => m.id === id);
     if (idx < 0) return;
     db.members[idx].disabled = !db.members[idx].disabled;
+    logAction('member.toggle', db.members[idx].name, db.members[idx].disabled ? '标记为禁用' : '取消禁用');
     await saveData();
     syncFromDb();
     renderMembers();
@@ -2035,15 +2169,192 @@
     const newNote = prompt('备注（可留空）', m.note || '');
     if (newNote === null) return;
     if (!newName.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) { alert('日期格式不对'); return; }
+    const before = { name: m.name, tavern: m.tavern, joinDate: m.joinDate, expiry: m.expiry, note: m.note };
     m.name = newName.trim();
     m.tavern = parseInt(newTavern) || 1;
     m.joinDate = newJoin.trim();
     m.expiry = newDate;
     m.note = newNote.trim();
     db.members.sort((a, b) => a.expiry.localeCompare(b.expiry));
+    const changes = [];
+    if (before.name !== m.name) changes.push('用户名 ' + before.name + ' → ' + m.name);
+    if (before.tavern !== m.tavern) changes.push('酒馆 ' + before.tavern + ' → ' + m.tavern);
+    if ((before.joinDate || '') !== m.joinDate) changes.push('创建日期 ' + (before.joinDate || '空') + ' → ' + (m.joinDate || '空'));
+    if (before.expiry !== m.expiry) changes.push('到期 ' + before.expiry + ' → ' + m.expiry);
+    if ((before.note || '') !== m.note) changes.push('备注 ' + (before.note || '空') + ' → ' + (m.note || '空'));
+    logAction('member.edit', m.name, changes.length ? changes.join(' · ') : '保存（内容无变化）');
     await saveData();
     syncFromDb();
     renderMembers();
+  }
+
+  // ---- 操作留痕 ----
+  const OPERATOR_KEY = 'apiassistant-operator';
+  const LOG_MAX = 800;
+  const LOG_ACTIONS = {
+    'topup.add':     ['补款登记', 'add'],
+    'topup.edit':    ['修改补款', 'edit'],
+    'topup.del':     ['删除补款', 'del'],
+    'topup.clear':   ['清空补款', 'clear'],
+    'member.add':    ['新增会员', 'add'],
+    'member.renew':  ['会员续期', 'edit'],
+    'member.edit':   ['修改会员', 'edit'],
+    'member.del':    ['删除会员', 'del'],
+    'member.toggle': ['禁用 / 启用会员', 'edit'],
+    'member.clear':  ['清空会员', 'clear'],
+    'config.save':   ['保存模型配置', 'edit'],
+    'history.save':  ['保存月度记录', 'edit'],
+    'history.del':   ['删除月度记录', 'del'],
+    'history.clear': ['清空月度记录', 'clear'],
+    'log.clear':     ['清空留痕', 'clear']
+  };
+
+  function logKind(action) {
+    return LOG_ACTIONS[action] || [action || '未知操作', 'other'];
+  }
+
+  function dayKey(d) {
+    const p = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+
+  function fmtLogTime(ts) {
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return String(ts || '');
+    const p = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' +
+      p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+
+  function getOperator() {
+    return (localStorage.getItem(OPERATOR_KEY) || '').trim();
+  }
+
+  function saveOperatorName(v) {
+    const name = String(v || '').trim();
+    if (name) localStorage.setItem(OPERATOR_KEY, name);
+    else localStorage.removeItem(OPERATOR_KEY);
+    renderOperator();
+  }
+
+  function askOperator() {
+    const v = prompt('当前操作人（会记在每条留痕里）', getOperator());
+    if (v === null) return;
+    saveOperatorName(v);
+  }
+
+  function renderOperator() {
+    const n = getOperator();
+    const chip = document.getElementById('opChip');
+    if (chip) {
+      chip.textContent = n ? '👤 ' + n : '👤 未设置';
+      chip.classList.toggle('unset', !n);
+      chip.title = n ? '点击修改当前操作人' : '点击设置当前操作人';
+    }
+    const inp = document.getElementById('opNameInput');
+    if (inp && document.activeElement !== inp) inp.value = n;
+    const tip = document.getElementById('opTip');
+    if (tip) tip.textContent = n ? '之后的写操作都会记在这个名字下' : '还没设置的话，补款时会自动用「经手人」的名字';
+  }
+
+  function logAction(action, target, detail, who) {
+    if (!db.logs) db.logs = [];
+    db.logs.unshift({
+      id: 'L' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      ts: new Date().toISOString(),
+      who: who || getOperator() || '未署名',
+      action: action,
+      target: target || '',
+      detail: detail || ''
+    });
+    if (db.logs.length > LOG_MAX) db.logs.length = LOG_MAX;
+    updateLogBadge();
+  }
+
+  function updateLogBadge() {
+    const el = document.getElementById('logCount');
+    if (!el) return;
+    const k = dayKey(new Date());
+    el.textContent = (db.logs || []).filter(l => dayKey(new Date(l.ts)) === k).length;
+  }
+
+  function renderLogs() {
+    const logs = db.logs || [];
+    const kw = (document.getElementById('logSearch')?.value || '').trim().toLowerCase();
+    const type = document.getElementById('logType')?.value || '';
+    const from = document.getElementById('logFrom')?.value || '';
+    const to = document.getElementById('logTo')?.value || '';
+    const rows = logs.filter(l => {
+      if (type && l.action !== type) return false;
+      const day = String(l.ts || '').slice(0, 10);
+      if (from && day < from) return false;
+      if (to && day > to) return false;
+      if (kw) {
+        const hay = ((l.who || '') + ' ' + (l.target || '') + ' ' + (l.detail || '') + ' ' + logKind(l.action)[0]).toLowerCase();
+        if (!hay.includes(kw)) return false;
+      }
+      return true;
+    });
+
+    const todayN = logs.filter(l => dayKey(new Date(l.ts)) === dayKey(new Date())).length;
+    const people = new Set(logs.map(l => l.who || '未署名')).size;
+    const last = logs[0] ? fmtLogTime(logs[0].ts) : '—';
+    document.getElementById('logStats').innerHTML =
+      '<span class="stat-chip total">共 ' + logs.length + ' 条</span>' +
+      '<span class="stat-chip ok">今日 ' + todayN + ' 条</span>' +
+      '<span class="stat-chip">操作人 ' + people + ' 位</span>' +
+      '<span class="stat-chip">最近 ' + esc(last) + '</span>' +
+      (logs.length !== rows.length ? '<span class="stat-chip warn">筛出 ' + rows.length + ' 条</span>' : '');
+
+    const tbody = document.getElementById('logBody');
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#bcc3cd;padding:32px;">' +
+        (logs.length ? '没有符合筛选条件的留痕' : '还没有留痕记录，去补回空或会员管理里操作一下就有了') + '</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.slice(0, 300).map(l => {
+      const k = logKind(l.action);
+      return '<tr>' +
+        '<td class="log-time">' + esc(fmtLogTime(l.ts)) + '</td>' +
+        '<td><span class="log-who">' + esc(l.who || '未署名') + '</span></td>' +
+        '<td><span class="log-act ' + k[1] + '">' + esc(k[0]) + '</span></td>' +
+        '<td class="log-target">' + esc(l.target || '—') + '</td>' +
+        '<td class="log-detail">' + esc(l.detail || '') + '</td>' +
+        '</tr>';
+    }).join('') +
+      (rows.length > 300 ? '<tr><td colspan="5" style="text-align:center;color:#bcc3cd;padding:16px;">只显示最近 300 条，导出 CSV 可以看全部</td></tr>' : '');
+  }
+
+  function resetLogFilters() {
+    ['logSearch', 'logFrom', 'logTo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const t = document.getElementById('logType');
+    if (t) t.value = '';
+    renderLogs();
+  }
+
+  function exportLogs() {
+    const logs = db.logs || [];
+    if (!logs.length) { alert('还没有留痕可导出'); return; }
+    const cell = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    let csv = '\ufeff时间,操作人,操作,对象,详情\n';
+    logs.forEach(l => {
+      csv += [fmtLogTime(l.ts), l.who || '', logKind(l.action)[0], l.target || '', l.detail || ''].map(cell).join(',') + '\n';
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'apiassistant_logs_' + dayKey(new Date()) + '.csv';
+    a.click();
+  }
+
+  async function clearLogs() {
+    const n = (db.logs || []).length;
+    if (!n) { alert('还没有留痕'); return; }
+    if (!confirm('确定清空全部 ' + n + ' 条留痕？这次「清空」本身也会留一条记录。')) return;
+    db.logs = [];
+    logAction('log.clear', '全部留痕', '清空 ' + n + ' 条');
+    await saveData();
+    renderLogs();
   }
 
   function esc(s) {
@@ -2096,8 +2407,11 @@
     syncFromDb();
     renderTopups();
     renderMembers();
+    renderOperator();
+    updateLogBadge();
   }
 
+  renderOperator();
   if (!ghToken) {
     document.getElementById('tokenSetup').style.display = 'block';
   } else {
