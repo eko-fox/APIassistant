@@ -739,6 +739,9 @@
   .speed-history th {color:#64748b;}
   .speed-toolbar {display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
   @media(prefers-reduced-motion:no-preference){.speed-value.busy {animation:svPulse 1.5s infinite;}}
+  .log-pagination {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:16px 0;font-size:13px;}
+  .log-pagination > div {display:flex;gap:8px;}
+  .log-pagination button:disabled {opacity:.45;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -959,6 +962,13 @@
       </table>
     </div>
 
+    <nav class="log-pagination" aria-label="操作留痕分页">
+      <span id="logPageInfo" role="status" aria-live="polite"></span>
+      <div>
+        <button type="button" class="btn-secondary" id="logPrev" onclick="changeLogPage(-1)" disabled>上一页</button>
+        <button type="button" class="btn-secondary" id="logNext" onclick="changeLogPage(1)" disabled>下一页</button>
+      </div>
+    </nav>
     <div class="actions">
       <button class="btn-secondary" onclick="clearLogs()">清空留痕</button>
     </div>
@@ -2446,12 +2456,25 @@
     el.textContent = allLogEntries().filter(l => dayKey(new Date(l.ts)) === k).length;
   }
 
+  const LOG_PAGE_SIZE = 50;
+  let logPage = 1;
+  let logFilterKey = '';
+  function changeLogPage(step) {
+    logPage += step;
+    renderLogs();
+  }
+
   function renderLogs() {
     const logs = allLogEntries();
     const kw = (document.getElementById('logSearch')?.value || '').trim().toLowerCase();
     const type = document.getElementById('logType')?.value || '';
     const from = document.getElementById('logFrom')?.value || '';
     const to = document.getElementById('logTo')?.value || '';
+    const filterKey = JSON.stringify([kw, type, from, to]);
+    if (filterKey !== logFilterKey) {
+      logPage = 1;
+      logFilterKey = filterKey;
+    }
     const rows = logs.filter(l => {
       if (type && l.action !== type) return false;
       const day = String(l.ts || '').slice(0, 10);
@@ -2475,13 +2498,22 @@
       (repoCommitState === 'error' ? '<span class="stat-chip bad">站点修改读取失败</span>' : '') +
       (logs.length !== rows.length ? '<span class="stat-chip warn">筛出 ' + rows.length + ' 条</span>' : '');
 
+    const totalPages = Math.max(1, Math.ceil(rows.length / LOG_PAGE_SIZE));
+    logPage = Math.max(1, Math.min(logPage, totalPages));
+    const start = (logPage - 1) * LOG_PAGE_SIZE;
+    const end = Math.min(start + LOG_PAGE_SIZE, rows.length);
+    document.getElementById('logPageInfo').textContent =
+      '第 ' + logPage + ' / ' + totalPages + ' 页 · 共 ' + rows.length + ' 条' +
+      (rows.length ? ' · 显示 ' + (start + 1) + '–' + end + ' 条' : '');
+    document.getElementById('logPrev').disabled = logPage === 1;
+    document.getElementById('logNext').disabled = logPage === totalPages;
     const tbody = document.getElementById('logBody');
     if (rows.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#bcc3cd;padding:32px;">' +
         (logs.length ? '没有符合筛选条件的留痕' : '还没有留痕记录，去补回空或会员管理里操作一下就有了') + '</td></tr>';
       return;
     }
-    tbody.innerHTML = rows.slice(0, 300).map(l => {
+    tbody.innerHTML = rows.slice(start, end).map(l => {
       const k = logKind(l.action);
       return '<tr>' +
         '<td class="log-time">' + esc(fmtLogTime(l.ts)) + '</td>' +
@@ -2492,8 +2524,7 @@
           : esc(l.target || '—')) + '</td>' +
         '<td class="log-detail">' + esc(l.detail || '') + '</td>' +
         '</tr>';
-    }).join('') +
-      (rows.length > 300 ? '<tr><td colspan="5" style="text-align:center;color:#bcc3cd;padding:16px;">只显示最近 300 条，导出 CSV 可以看全部</td></tr>' : '');
+    }).join('');
   }
 
   function resetLogFilters() {
