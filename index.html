@@ -764,7 +764,6 @@
     <button class="nav-tab" onclick="switchTab('status')">站点状态</button>
     <button class="nav-tab" onclick="switchTab('provinceSpeed')">省份测速</button>
     <button class="nav-tab" onclick="switchTab('prices')">上游比价</button>
-    <button class="nav-tab" onclick="switchTab('speed')">站点测速</button>
     <button class="nav-tab" onclick="switchTab('log')">操作留痕 <span class="nav-badge" style="background:#e6faf0;color:#15803d;" id="logCount">0</span></button>
   </div>
   <button type="button" class="op-chip unset" id="opChip" onclick="askOperator()" title="点击设置当前操作人">👤 未设置</button>
@@ -1044,23 +1043,7 @@
   </div>
 
 
-  <div class="panel" id="panel-speed">
-    <div class="page-heading">
-      <div><div class="page-title">站点测速</div><div class="page-desc">两个站点，同一网络，并排比较</div></div>
-      <button type="button" class="btn-primary" id="speedRun" onclick="runSiteSpeed()">开始测速 · 各 3 轮</button>
-    </div>
-    <div class="card">
-      <div class="speed-toolbar"><strong>📍 当前浏览器 · 当前网络</strong><span class="speed-note" id="speedProgress" role="status" aria-live="polite">点击开始，测量两个站点首页的请求耗时。</span></div>
-      <div class="speed-note">结果包含当前网络、连接和站点响应的影响，不代表模型生成速度。这里是单点测量；全国多地区测速需要额外探测节点。<br>跨域请求无法读取 HTTP 状态码；“收到响应”不代表业务健康，“未完成”也可能是网络、证书、浏览器拦截或超时。</div>
-    </div>
-    <div class="speed-grid" id="speedCards"></div>
-    <div class="card">
-      <div class="speed-toolbar"><strong>最近测速</strong><span class="speed-note">仅保存在当前浏览器，最多 20 次</span><button type="button" class="btn-secondary" onclick="clearSpeedHistory()">清空测速历史</button></div>
-      <div class="speed-history" id="speedHistory"></div>
-    </div>
-  </div>
-
-  <div class="panel" id="panel-provinceSpeed"><div class="page-heading"><div><div class="page-title">省份测速</div><div class="page-desc">比较 API 站和 WWW 站在各地区的访问延迟</div></div><button class="btn-primary" onclick="alert('省份探测节点尚未接入，当前页面先展示结构')">开始全国测速</button></div><div class="province-speed-note">📍 当前页面只负责展示真实探测结果。全国测速需要各省探测节点；节点接入前不会填入模拟数据，也不会把当前浏览器速度冒充成省份速度。</div><div class="province-speed-grid"><div class="card province-speed-card"><h3>API 站</h3><p>https://api.heibaiwoof.com</p><div class="province-speed-empty">等待地区探测节点接入</div></div><div class="card province-speed-card"><h3>WWW 站</h3><p>https://www.heibaiwoof.com</p><div class="province-speed-empty">等待地区探测节点接入</div></div></div><div class="card" style="margin-top:16px;overflow-x:auto"><table class="province-speed-table"><thead><tr><th>地区</th><th>API 站平均</th><th>WWW 站平均</th><th>成功率</th><th>最近更新</th></tr></thead><tbody><tr><td>全国省份</td><td>—</td><td>—</td><td>—</td><td>尚未接入节点</td></tr></tbody></table></div></div>
+  <div class="panel" id="panel-provinceSpeed"><div class="page-heading"><div><div class="page-title">站点测速</div><div class="page-desc">比较 API 站和 WWW 站在各地区的访问延迟</div></div><button class="btn-primary" onclick="alert('省份探测节点尚未接入，当前页面先展示结构')">开始全国测速</button></div><div class="province-speed-note">📍 当前页面只负责展示真实探测结果。全国测速需要各省探测节点；节点接入前不会填入模拟数据，也不会把当前浏览器速度冒充成省份速度。</div><div class="province-speed-grid"><div class="card province-speed-card"><h3>API 站</h3><p>https://api.heibaiwoof.com</p><div class="province-speed-empty">等待地区探测节点接入</div></div><div class="card province-speed-card"><h3>WWW 站</h3><p>https://www.heibaiwoof.com</p><div class="province-speed-empty">等待地区探测节点接入</div></div></div><div class="card" style="margin-top:16px;overflow-x:auto"><table class="province-speed-table"><thead><tr><th>地区</th><th>API 站平均</th><th>WWW 站平均</th><th>成功率</th><th>最近更新</th></tr></thead><tbody><tr><td>全国省份</td><td>—</td><td>—</td><td>—</td><td>尚未接入节点</td></tr></tbody></table></div></div>
   <div class="panel" id="panel-status">
     <div class="page-heading">
       <div>
@@ -1776,7 +1759,7 @@
   });
 
   // ---- Tab ----
-  const TAB_NAMES = ['topup','members','servers','invite','status','provinceSpeed','prices','speed','log'];
+  const TAB_NAMES = ['topup','members','servers','invite','status','provinceSpeed','prices','log'];
   function switchTab(name) {
     document.querySelectorAll('.nav-tab').forEach((t, i) => {
       t.classList.toggle('active', TAB_NAMES[i] === name);
