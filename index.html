@@ -2269,10 +2269,7 @@
         return {
           id: 'C' + c.sha,
           ts: (commit.committer && commit.committer.date) || (commit.author && commit.author.date) || '',
-          who: (() => {
-            const name = (commit.author && commit.author.name) || (c.author && c.author.login) || '未知';
-            return ['eko-fox', 'ekofox'].includes(String(name).toLowerCase()) ? '江聿尘' : name;
-          })(),
+          who: (commit.author && commit.author.name) || (c.author && c.author.login) || '未知',
           action: 'repo.commit',
           target: String(c.sha || '').slice(0, 7),
           detail: String(commit.message || '').split('\n')[0]
