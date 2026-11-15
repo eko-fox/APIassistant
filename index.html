@@ -742,7 +742,7 @@
   .log-pagination {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:16px 0;font-size:13px;}
   .log-pagination > div {display:flex;gap:8px;}
   .log-pagination button:disabled {opacity:.45;cursor:not-allowed;}
-</style>
+  .province-speed-note{background:#eef6ff;border:1px solid #cfe4f5;border-radius:12px;padding:12px 16px;color:#4b6478;font-size:13px;line-height:1.7;margin-bottom:16px}.province-speed-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.province-speed-card{padding:18px}.province-speed-card h3{margin:0 0 5px;font-size:16px}.province-speed-card p{color:#8e99a4;font-size:12px;margin:0 0 14px}.province-speed-empty{padding:18px;border:1px dashed #ccd8e5;border-radius:10px;color:#8e99a4;font-size:13px;text-align:center}.province-speed-table{width:100%;border-collapse:collapse;font-size:13px}.province-speed-table th,.province-speed-table td{padding:11px 12px;border-bottom:1px solid #e5ebf2;text-align:left}.province-speed-table th{color:#64748b;background:#f8fafc}.province-speed-table td:nth-child(n+2){color:#8e99a4}@media(max-width:640px){.province-speed-table{min-width:560px}}</style>
 </head>
 <body>
 <div id="fxBack" aria-hidden="true"></div>
@@ -762,6 +762,7 @@
     <button class="nav-tab" onclick="switchTab('servers')">服务器档案</button>
     <button class="nav-tab" onclick="switchTab('invite')">邀请总览</button>
     <button class="nav-tab" onclick="switchTab('status')">站点状态</button>
+    <button class="nav-tab" onclick="switchTab('provinceSpeed')">省份测速</button>
     <button class="nav-tab" onclick="switchTab('prices')">上游比价</button>
     <button class="nav-tab" onclick="switchTab('speed')">站点测速</button>
     <button class="nav-tab" onclick="switchTab('log')">操作留痕 <span class="nav-badge" style="background:#e6faf0;color:#15803d;" id="logCount">0</span></button>
@@ -1059,6 +1060,7 @@
     </div>
   </div>
 
+  <div class="panel" id="panel-provinceSpeed"><div class="page-heading"><div><div class="page-title">省份测速</div><div class="page-desc">比较 API 站和 WWW 站在各地区的访问延迟</div></div><button class="btn-primary" onclick="alert('省份探测节点尚未接入，当前页面先展示结构')">开始全国测速</button></div><div class="province-speed-note">📍 当前页面只负责展示真实探测结果。全国测速需要各省探测节点；节点接入前不会填入模拟数据，也不会把当前浏览器速度冒充成省份速度。</div><div class="province-speed-grid"><div class="card province-speed-card"><h3>API 站</h3><p>https://api.heibaiwoof.com</p><div class="province-speed-empty">等待地区探测节点接入</div></div><div class="card province-speed-card"><h3>WWW 站</h3><p>https://www.heibaiwoof.com</p><div class="province-speed-empty">等待地区探测节点接入</div></div></div><div class="card" style="margin-top:16px;overflow-x:auto"><table class="province-speed-table"><thead><tr><th>地区</th><th>API 站平均</th><th>WWW 站平均</th><th>成功率</th><th>最近更新</th></tr></thead><tbody><tr><td>全国省份</td><td>—</td><td>—</td><td>—</td><td>尚未接入节点</td></tr></tbody></table></div></div>
   <div class="panel" id="panel-status">
     <div class="page-heading">
       <div>
@@ -1774,7 +1776,7 @@
   });
 
   // ---- Tab ----
-  const TAB_NAMES = ['topup','members','servers','invite','status','prices','speed','log'];
+  const TAB_NAMES = ['topup','members','servers','invite','status','provinceSpeed','prices','speed','log'];
   function switchTab(name) {
     document.querySelectorAll('.nav-tab').forEach((t, i) => {
       t.classList.toggle('active', TAB_NAMES[i] === name);
